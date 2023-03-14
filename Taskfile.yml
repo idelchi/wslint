@@ -1,0 +1,78 @@
+version: '3'
+
+# TODO: Can 'devenv' be a variable?
+vars:
+  SETTINGS_DIR: devenv
+
+includes:
+  common:
+    taskfile: 'devenv/Taskfile.yml'
+    vars:
+      CONFIG_DIR: './devenv/config'
+      SCRIPTS_DIR: './devenv/scripts'
+    aliases: [ci]
+
+  go:
+    taskfile: 'devenv/taskfiles/Taskfile.go.yml'
+    vars:
+      CONFIG_DIR: './devenv/config'
+      SCRIPTS_DIR: './devenv/scripts'
+
+silent: true
+
+output: prefixed
+
+tasks:
+  clean:
+    - task: common:aux:clean
+    - task: go:clean
+
+  info:
+    - task: common:git
+
+  format:
+    - task: common:format
+    - task: go:format
+
+  lint:
+    deps:
+      - common:lint
+      - go:lint
+
+  build:
+    - task: go:build
+    - task: go:release
+
+  test:
+    - task: go:quality
+
+  docker: docker compose run --rm devenv task {{.CLI_ARGS}}
+
+  # ---------
+  all:
+    desc: run all available tasks
+    cmds:
+      - task: clean
+      - task: info
+      - task: format
+      - task: lint
+      - task: build
+      - task: test
+
+  # default 'format & lint' target
+  # ---------
+  default:
+    desc: clean, format & lint
+    cmds:
+      - task: info
+      - task: format
+      - task: lint
+
+  # push:
+    # cmds:
+      # - task docker -- format -f
+      # - |
+        # cd devenv
+        # task git:push
+        # cd ..
+        # task common:git:push

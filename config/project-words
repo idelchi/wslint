@@ -1,0 +1,14 @@
+# ~ - prefix that tells the spell checker to only use the word when case sensitivity is turned off.
+# + - prefix/suffix that tells the spell checker that a word MUST be combined with another word to be valid.
+# * - prefix/suffix that tells the spell checker that a word can be combined with another word.
+# ! - prefix forbid a word.
+
+# cspell --config=settings/config/cspell.yaml --words-only --unique "**" | sort --ignore-case >> config/project-words.txt
+
+
+Globber
+Lintable
+linted
+wslint
+stretchr
+Unpatch
