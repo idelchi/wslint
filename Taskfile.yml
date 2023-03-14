@@ -68,11 +68,7 @@ tasks:
       - task: format
       - task: lint
 
-  # push:
-    # cmds:
-      # - task docker -- format -f
-      # - |
-        # cd devenv
-        # task git:push
-        # cd ..
-        # task common:git:push
+  push:
+    - task: common:git:diff
+    - echo "commit and push? [ctrl-c to cancel]" && read
+    - task: common:git:push
