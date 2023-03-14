@@ -2,21 +2,21 @@ version: '3'
 
 # TODO: Can 'devenv' be a variable?
 vars:
-  SETTINGS_DIR: devenv
+  SETTINGS_DIR: .devenv
 
 includes:
   common:
-    taskfile: 'devenv/Taskfile.yml'
+    taskfile: '.devenv/Taskfile.yml'
     vars:
-      CONFIG_DIR: './devenv/config'
-      SCRIPTS_DIR: './devenv/scripts'
+      CONFIG_DIR: './.devenv/config'
+      SCRIPTS_DIR: './.devenv/scripts'
     aliases: [ci]
 
   go:
-    taskfile: 'devenv/taskfiles/Taskfile.go.yml'
+    taskfile: '.devenv/taskfiles/Taskfile.go.yml'
     vars:
-      CONFIG_DIR: './devenv/config'
-      SCRIPTS_DIR: './devenv/scripts'
+      CONFIG_DIR: './.devenv/config'
+      SCRIPTS_DIR: './.devenv/scripts'
 
 silent: true
 

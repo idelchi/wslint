@@ -36,5 +36,3 @@ The following exclude patterns are used by default:
 > The user is warned against using the tool on files which are not under version control.
 
 ## TODOs
-
-- Race detected, rerun with race flag to see the problem. Might have to run several times to see the problem.
