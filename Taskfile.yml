@@ -69,6 +69,4 @@ tasks:
       - task: lint
 
   push:
-    - task: common:git:diff
-    - echo "commit and push? [ctrl-c to cancel]" && read
-    - task: common:git:push
+    - task: common:push
