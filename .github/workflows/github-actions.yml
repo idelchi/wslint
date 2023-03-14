@@ -1,2 +1,50 @@
 name: wslint
 on: [workflow_dispatch]
+
+jobs:
+  info:
+    runs-on: ubuntu-22.04
+    container: idelchi/devenv:latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - run: task info
+
+  lint:
+    needs: info
+    runs-on: ubuntu-22.04
+    container: idelchi/devenv:latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - run: task lint
+
+  build:
+    needs: info
+    runs-on: ubuntu-22.04
+    container: idelchi/devenv:latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - run: task build
+
+  test:
+    needs: info
+    runs-on: ubuntu-22.04
+    container: idelchi/devenv:latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - run: task test
