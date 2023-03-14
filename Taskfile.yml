@@ -46,7 +46,8 @@ tasks:
   test:
     - task: go:quality
 
-  docker: docker compose run --rm devenv task {{.CLI_ARGS}}
+  docker:
+    - task: common:docker
 
   # ---------
   all:

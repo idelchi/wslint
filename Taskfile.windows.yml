@@ -1,9 +1,0 @@
-version: '3'
-
-# Included to quickly run some tasks from the host OS in case it doesn't have the required tools installed
-tasks:
-  default:
-    cmds:
-      - cmd: docker compose run --rm devenv task {{.ARGS}}
-    vars:
-      ARGS: '{{.CLI_ARGS | default "common"}}'
