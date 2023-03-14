@@ -140,9 +140,6 @@ func TestGlobber_Match_CornerCases(t *testing.T) {
 	dir := t.TempDir()
 	file := createFile(t, dir, "test.txt", "test")
 
-	// Create the globber, to be reused in tests.
-	matcher := matcher.Globber{Logger: logger}
-
 	// Create a list of test cases.
 	tcs := []struct {
 		name     string   // Name of the test case (for logging)
@@ -170,6 +167,9 @@ func TestGlobber_Match_CornerCases(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
+
+			// Create the globber
+			matcher := matcher.Globber{Logger: logger}
 
 			fErrCheck := require.NoError
 			if tc.err {
