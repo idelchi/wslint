@@ -20,6 +20,21 @@ func createFile(t *testing.T, file, content string) {
 	}
 }
 
+func iterateManager(t *testing.T, manager file.Manager) []string {
+	t.Helper()
+
+	rows := make([]string, 0)
+
+	for i := 0; manager.HasLines(); i++ {
+		line, err := manager.Next()
+		rows = append(rows, line)
+
+		require.NoError(t, err)
+	}
+
+	return rows
+}
+
 func TestFileHandler(t *testing.T) {
 	t.Parallel()
 
@@ -35,25 +50,18 @@ func TestFileHandler(t *testing.T) {
 	createFile(t, filePath, strings.Join(content, "\n"))
 
 	// Create a file manager
-	handler := file.Manager{Name: filePath}
+	manager := file.Manager{Name: filePath}
 
-	require.NoError(t, handler.Open())
+	require.NoError(t, manager.Open())
 
 	// Read all lines into a slice
-	rows := make([]string, 0)
-
-	for i := 0; handler.HasLines(); i++ {
-		line, err := handler.Next()
-		rows = append(rows, line)
-
-		require.NoError(t, err)
-	}
+	rows := iterateManager(t, manager)
 
 	// Check that the contents are the same
 	require.Equal(t, content, rows)
 }
 
-func TestFileHandler_Error(t *testing.T) {
+func TestFileHandler_Open_Error(t *testing.T) {
 	t.Parallel()
 
 	// Create a file with some contents
@@ -64,8 +72,24 @@ func TestFileHandler_Error(t *testing.T) {
 
 	// Require an error when opening a non-existing file
 	require.Error(t, handler.Open())
-	// Require an error when closing a non-opened file
-	require.Error(t, handler.Close())
+}
+
+func TestFileHandler_Close_Error(t *testing.T) {
+	t.Parallel()
+
+	// Create a file with some contents
+	filePath := filepath.Join(t.TempDir(), "test.txt")
+
+	// Create a file manager
+	handler := file.Manager{Name: filePath}
+
+	// Require an error when closing a non-opened file, using both syntaxes
+	var errPtr error
+
+	require.Error(t, handler.Close(&errPtr))
+	require.Error(t, errPtr)
+	require.Error(t, handler.Close(&errPtr))
+	require.Error(t, errPtr)
 
 	// Create the file
 	createFile(t, filePath, "no content")
@@ -76,6 +100,28 @@ func TestFileHandler_Error(t *testing.T) {
 	require.NoError(t, handler.Close())
 
 	// Try to read the file
+	_, err := handler.Next()
+	require.Error(t, err)
+}
+
+func TestFileHandler_Read_Error(t *testing.T) {
+	t.Parallel()
+
+	// Create a file with some contents
+	filePath := filepath.Join(t.TempDir(), "test.txt")
+
+	// Create a file manager
+	handler := file.Manager{Name: filePath}
+
+	// Create the file
+	createFile(t, filePath, "no content")
+
+	// Require no error when opening an existing file
+	require.NoError(t, handler.Open())
+
+	require.NoError(t, handler.Close())
+
+	// Read a closed file
 	_, err := handler.Next()
 	require.Error(t, err)
 }

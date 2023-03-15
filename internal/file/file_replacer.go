@@ -28,8 +28,16 @@ func (r *Replacer) Close(errPtr ...*error) (err error) {
 		err = fmt.Errorf("replacement file: %w", err2)
 	}
 
+	// If pointer syntax is used, set the error
 	if len(errPtr) > 0 {
-		*errPtr[0] = err
+		errOuter := errPtr[0]
+		// If the error is nil, set it
+		// Else, wrap it.
+		if *errOuter == nil {
+			*errOuter = err
+		} else {
+			*errOuter = fmt.Errorf("%w: %w", *errOuter, err)
+		}
 	}
 
 	return

@@ -26,11 +26,11 @@ func TestFileReplacer(t *testing.T) {
 	createFile(t, filePath, strings.Join(content, "\n"))
 
 	// Create a file manager
-	handler := file.Manager{Name: filePath}
-	require.NoError(t, handler.Open())
+	manager := file.Manager{Name: filePath}
+	require.NoError(t, manager.Open())
 
 	// Create a replacer
-	replacer := file.Replacer{Original: handler}
+	replacer := file.Replacer{Original: manager}
 	require.NoError(t, replacer.Setup())
 
 	contentReverse := []string{}
@@ -45,23 +45,17 @@ func TestFileReplacer(t *testing.T) {
 	require.NoError(t, replacer.Replace())
 
 	// Open the original file and check the lines
-	require.NoError(t, handler.Open())
+	require.NoError(t, manager.Open())
 
 	// Read all lines into a slice
-	rows := make([]string, 0)
-
-	for i := 0; handler.HasLines(); i++ {
-		line, err := handler.Next()
-		rows = append(rows, line)
-
-		require.NoError(t, err)
-	}
+	rows := iterateManager(t, manager)
 
 	// Check that the contents are the same, as the reversed order
 	// Skip the last line as it is empty.
 	require.Equal(t, contentReverse, rows[:len(rows)-1])
 }
 
+// TODO(Idelchi): Table driven tests.
 func TestFileReplacer_Error(t *testing.T) {
 	t.Parallel()
 
@@ -100,7 +94,12 @@ func TestFileReplacer_Error(t *testing.T) {
 	require.NoError(t, replacer.Setup())
 	// Never open the original file
 	// Try to close the original file
-	require.Error(t, replacer.Close())
+	var errPtr error
+
+	require.Error(t, replacer.Close(&errPtr))
+	require.Error(t, errPtr)
+	require.Error(t, replacer.Close(&errPtr))
+	require.Error(t, errPtr)
 
 	// Start over
 	replacer = file.Replacer{Original: file.Manager{Name: filePath}}
