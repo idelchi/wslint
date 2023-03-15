@@ -1,3 +1,9 @@
+// Package file offers two main structures:
+//   - Manager, which wraps a file and provides a simple interface for opening, closing and reading lines.
+//   - Replacer, which wraps two Manager instances and provides a simple interface for safely replacing a file with
+//     another.
+//
+// The intention is that the replacer is used by in-place formatters.
 package file
 
 import (
@@ -9,28 +15,32 @@ import (
 	"strings"
 )
 
-// Manager represents a wrapped management of file handling.
-type Manager struct {
-	Name   string
-	file   *os.File
-	reader *bufio.Reader
-	done   bool
-}
-
-// closeFile closes the ReadWriteCloser and returns the error.
+// closeFile closes a ReadWriteCloser and returns a error if it fails.
 func closeFile(c io.ReadWriteCloser) (err error) {
 	err = c.Close()
 
 	switch {
+	// If the file is already closed, return nil
 	case errors.Is(err, os.ErrClosed):
-		err = nil
+		return nil
 	case err != nil:
-		err = fmt.Errorf("failed to close: %w", err)
+		return fmt.Errorf("failed to close: %w", err)
 	default:
 		return nil
 	}
+}
 
-	return
+// Manager represents a wrapped management of file handling.
+// Given a name, it can open, close and read lines from the file, until EOF.
+type Manager struct {
+	// Name is the name of the file to open. Should be a full or relative path.
+	Name string
+	// file is the file handle.
+	file *os.File
+	// reader is the buffered reader.
+	reader *bufio.Reader
+	// done is true if the file has been read to EOF.
+	done bool
 }
 
 // Open the file for reading.
@@ -69,7 +79,9 @@ func (f *Manager) Next() (line string, err error) {
 }
 
 // Close closes the file (if open).
+// An optional error pointer can be passed in order to properly defer the error handling from the calling context.
 func (f *Manager) Close(errPtr ...*error) (err error) {
+	// Record the error
 	err = closeFile(f.file)
 
 	// If pointer syntax is used, set the error
@@ -80,7 +92,7 @@ func (f *Manager) Close(errPtr ...*error) (err error) {
 		if *errOuter == nil {
 			*errOuter = err
 		} else {
-			*errOuter = fmt.Errorf("%w, failed to close file: %w", *errOuter, err)
+			*errOuter = fmt.Errorf("%w: %w", *errOuter, err)
 		}
 	}
 
