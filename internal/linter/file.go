@@ -8,7 +8,6 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/idelchi/wslint/internal/checkers"
-	"github.com/idelchi/wslint/internal/file"
 )
 
 // Checker represents a line analyzer.
@@ -55,7 +54,7 @@ func (l *Linter) Lint() (err error) {
 	}
 
 	// Create a handler for the file
-	fileHandler := &file.Manager{Name: l.Name}
+	fileHandler := &Manager{Name: l.Name}
 
 	defer fileHandler.Close(&err) //nolint:errcheck // The error is checked, with the &err parameter.
 
@@ -107,7 +106,7 @@ func (l *Linter) Fix() (err error) {
 	}
 
 	// Create a handler for the file
-	fileHandler := file.Manager{Name: l.Name}
+	fileHandler := Manager{Name: l.Name}
 
 	defer fileHandler.Close(&err) //nolint:errcheck // The error is checked, with the &err parameter.
 	// Open the file
@@ -116,7 +115,7 @@ func (l *Linter) Fix() (err error) {
 	}
 
 	// Create a temporary file
-	replacer := file.Replacer{Original: fileHandler}
+	replacer := Replacer{Original: fileHandler}
 
 	defer replacer.Close(&err) //nolint:errcheck // The error is checked, with the &err parameter.
 

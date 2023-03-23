@@ -1,8 +1,11 @@
 package linter_test
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -11,6 +14,8 @@ import (
 
 	"github.com/idelchi/wslint/internal/checkers"
 	"github.com/idelchi/wslint/internal/linter"
+
+	"bou.ke/monkey"
 )
 
 // Create a file in a temporary folder, fill it with some content, and close it.
@@ -150,4 +155,82 @@ func TestLinter_Error(t *testing.T) {
 
 	lintFile.Error = assert.AnError
 	require.False(t, lintFile.Summary())
+}
+
+// TODO(Idelchi): Replace with a proper test case, not monkey-patching. It's an indicator that the code needs to be
+// refactored.
+func TestLinter_Error_MonkeyPatch(t *testing.T) { //nolint:paralleltest // Monkey patching is not thread-safe
+	// Make life easier - assume there's an environment variable called 'RUN_MONKEY_PATCH_TESTS'
+	if ok, err := strconv.ParseBool(os.Getenv("RUN_MONKEY_PATCH_TESTS")); !ok || err != nil {
+		t.Skip("Skipping test because it requires monkey patching (inlining disabled)")
+	}
+
+	file := filepath.Join(t.TempDir(), "test.txt")
+	lintFile := &linter.Linter{Name: file}
+	lintFile.InsertChecker(&checkers.Blanks{})
+	// Create the file
+	createFile(t, file, "This file ends with whitespace.  ")
+
+	// Monkey Patching!
+	defer monkey.UnpatchAll()
+
+	var manager *linter.Manager
+
+	// Next in Lint
+	monkey.PatchInstanceMethod(reflect.TypeOf(manager), "Next", func(*linter.Manager) (string, error) {
+		return "", fmt.Errorf("failed to read line: %w", assert.AnError)
+	})
+	require.Error(t, lintFile.Lint())
+	monkey.UnpatchAll()
+
+	// Open in Fix
+	monkey.PatchInstanceMethod(reflect.TypeOf(manager), "Open", func(*linter.Manager) error {
+		return fmt.Errorf("failed to open file: %w", assert.AnError)
+	})
+
+	monkey.PatchInstanceMethod(reflect.TypeOf(lintFile), "Lint", func(*linter.Linter) error {
+		return nil
+	})
+
+	require.Error(t, lintFile.Fix())
+
+	monkey.UnpatchInstanceMethod(reflect.TypeOf(manager), "Open")
+
+	// Setup in Fix
+	var replacer *linter.Replacer
+
+	monkey.PatchInstanceMethod(reflect.TypeOf(replacer), "Setup", func(*linter.Replacer) error {
+		return fmt.Errorf("failed to setup file: %w", assert.AnError)
+	})
+
+	require.Error(t, lintFile.Fix())
+
+	monkey.UnpatchInstanceMethod(reflect.TypeOf(replacer), "Setup")
+
+	// Next in Fix
+	monkey.PatchInstanceMethod(reflect.TypeOf(manager), "Next", func(*linter.Manager) (string, error) {
+		return "", fmt.Errorf("failed to read line: %w", assert.AnError)
+	})
+
+	require.Error(t, lintFile.Fix())
+
+	monkey.UnpatchInstanceMethod(reflect.TypeOf(manager), "Next")
+
+	// Write in Fix
+	monkey.PatchInstanceMethod(reflect.TypeOf(replacer), "Write", func(*linter.Replacer, string) error {
+		return fmt.Errorf("failed to write file: %w", assert.AnError)
+	})
+
+	require.Error(t, lintFile.Fix())
+
+	monkey.UnpatchInstanceMethod(reflect.TypeOf(replacer), "Write")
+
+	// Replace in Fix
+	monkey.PatchInstanceMethod(reflect.TypeOf(replacer), "Replace", func(*linter.Replacer) error {
+		return fmt.Errorf("failed to replace file: %w", assert.AnError)
+	})
+
+	require.Error(t, lintFile.Fix())
+
+	monkey.UnpatchInstanceMethod(reflect.TypeOf(replacer), "Replace")
 }

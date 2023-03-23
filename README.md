@@ -34,5 +34,3 @@ The following exclude patterns are used by default:
 > **Warning**
 > This is a toy project to learn Go and its surrounding ecosystem and tooling.
 > The user is warned against using the tool on files which are not under version control.
-
-## TODOs

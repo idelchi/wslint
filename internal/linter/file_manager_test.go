@@ -1,26 +1,16 @@
-package file_test
+package linter_test
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/idelchi/wslint/internal/file"
+	"github.com/idelchi/wslint/internal/linter"
 )
 
-// Create a file in a temporary folder, fill it with some content, and close it.
-func createFile(t *testing.T, file, content string) {
-	t.Helper()
-
-	if err := os.WriteFile(file, []byte(content), 0o600); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func iterateManager(t *testing.T, manager file.Manager) []string {
+func iterateManager(t *testing.T, manager linter.Manager) []string {
 	t.Helper()
 
 	rows := make([]string, 0)
@@ -50,7 +40,7 @@ func TestFileHandler(t *testing.T) {
 	createFile(t, filePath, strings.Join(content, "\n"))
 
 	// Create a file manager
-	manager := file.Manager{Name: filePath}
+	manager := linter.Manager{Name: filePath}
 
 	require.NoError(t, manager.Open())
 
@@ -68,7 +58,7 @@ func TestFileHandler_Open_Error(t *testing.T) {
 	filePath := filepath.Join(t.TempDir(), "test.txt")
 
 	// Create a file manager
-	handler := file.Manager{Name: filePath}
+	handler := linter.Manager{Name: filePath}
 
 	// Require an error when opening a non-existing file
 	require.Error(t, handler.Open())
@@ -81,7 +71,7 @@ func TestFileHandler_Close_Error(t *testing.T) {
 	filePath := filepath.Join(t.TempDir(), "test.txt")
 
 	// Create a file manager
-	handler := file.Manager{Name: filePath}
+	handler := linter.Manager{Name: filePath}
 
 	// Require an error when closing a non-opened file, using both syntaxes
 	var errPtr error
@@ -111,7 +101,7 @@ func TestFileHandler_Read_Error(t *testing.T) {
 	filePath := filepath.Join(t.TempDir(), "test.txt")
 
 	// Create a file manager
-	handler := file.Manager{Name: filePath}
+	handler := linter.Manager{Name: filePath}
 
 	// Create the file
 	createFile(t, filePath, "no content")

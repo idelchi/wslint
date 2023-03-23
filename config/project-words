@@ -5,7 +5,7 @@
 
 # cspell --config=settings/config/cspell.yaml --words-only --unique "**" | sort --ignore-case >> config/project-words.txt
 
-
+errcheck
 Globber
 Lintable
 linted

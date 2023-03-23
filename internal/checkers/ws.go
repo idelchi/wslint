@@ -3,7 +3,7 @@ package checkers
 import (
 	"errors"
 
-	"github.com/idelchi/wslint/internal/trailing"
+	"github.com/idelchi/wslint/trailing"
 )
 
 // ErrHasTrailing is returned when there is trailing whitespace.
