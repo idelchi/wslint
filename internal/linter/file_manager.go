@@ -1,10 +1,4 @@
-// Package file offers two main structures:
-//   - Manager, which wraps a file and provides a simple interface for opening, closing and reading lines.
-//   - Replacer, which wraps two Manager instances and provides a simple interface for safely replacing a file with
-//     another.
-//
-// The intention is that the replacer is used by in-place formatters.
-package file
+package linter
 
 import (
 	"bufio"

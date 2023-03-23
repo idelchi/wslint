@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/idelchi/wslint/internal/trailing"
+	"github.com/idelchi/wslint/trailing"
 )
 
 func TestTrailing(t *testing.T) {
