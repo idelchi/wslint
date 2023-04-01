@@ -1,6 +1,5 @@
 version: '3'
 
-# TODO: Can 'devenv' be a variable?
 vars:
   SETTINGS_DIR: .devenv
 
@@ -10,7 +9,8 @@ includes:
     vars:
       CONFIG_DIR: '{{.SETTINGS_DIR}}/config'
       SCRIPTS_DIR: '{{.SETTINGS_DIR}}/scripts'
-    aliases: [ci]
+    aliases:
+      - ci
 
   go:
     taskfile: '{{.SETTINGS_DIR}}/taskfiles/Taskfile.go.yml'

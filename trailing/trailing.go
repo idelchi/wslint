@@ -8,20 +8,13 @@ import (
 )
 
 // Has checks if a string has trailing whitespace, as defined by unicode.IsSpace.
+// It returns true if the input string has trailing whitespace, false otherwise.
 func Has(line string) bool {
-	switch line {
-	case "", strings.TrimRightFunc(line, unicode.IsSpace):
-		return false
-	default:
-		return true
-	}
+	return line != strings.TrimRightFunc(line, unicode.IsSpace)
 }
 
 // Trim removes trailing whitespace, as defined by unicode.IsSpace, from a string.
+// It returns a new string with the trailing whitespace removed.
 func Trim(line string) string {
-	if !Has(line) {
-		return line
-	}
-
 	return strings.TrimRightFunc(line, unicode.IsSpace)
 }

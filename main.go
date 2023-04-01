@@ -24,17 +24,10 @@ func usage() {
 	flag.PrintDefaults()
 }
 
-// Helper to print a message, the usage and exit with error code 1.
-func printAndExit(msg string) {
+// exit prints the message and exits with the specified exit code.
+func exit(code int, msg string) {
 	log.Println(msg)
-	flag.Usage()
-	os.Exit(1)
-}
-
-// Helper to print the version and exit with error code 0.
-func displayVersion() {
-	log.Println(versionStamp)
-	os.Exit(0)
+	os.Exit(code)
 }
 
 // Options contains the options for the linter.
@@ -66,17 +59,17 @@ func main() {
 
 	// If the -v flag is set, print the version and exit
 	if *version {
-		displayVersion()
+		exit(0, versionStamp)
 	}
 
 	// If no arguments are given, give an error message
 	if flag.NArg() == 0 {
-		printAndExit("Error: Need to provide at least one path element")
+		exit(1, "Error: Need to provide at least one path element")
 	}
 
 	// If the number of parallel jobs is less than 1, give an error message
 	if *parallel <= 0 {
-		printAndExit("Error: Number of parallel jobs must be greater than 0")
+		exit(1, "Error: Number of parallel jobs must be greater than 0")
 	}
 
 	// Create a logger for debug messages
@@ -122,7 +115,9 @@ func match(options Options) int {
 	// Collect the files to inspect, ranging over the patterns
 	for _, arg := range patterns {
 		if err := matcher.Match(arg); err != nil {
-			log.Fatalln(err)
+			log.Printf("Error: %v", err)
+
+			return 1
 		}
 	}
 
