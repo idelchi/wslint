@@ -15,6 +15,7 @@ services:
     network_mode: bridge
     user: user
     volumes:
-      - .:/home/user
+      - .:/home/user/ws
     extra_hosts:
       - host:host-gateway
+    working_dir: /home/user/ws
