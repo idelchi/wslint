@@ -85,14 +85,6 @@
     "terminal.integrated.env.windows": {
         "PWD": "${workspaceFolder}"
     },
-    "terminal.integrated.defaultProfile.windows": "PowerShell",
-    /* ****** ****** ****** */
-    /* ****** COPILOT ****** */
-    "editor.inlineSuggest.enabled": true,
-    "github.copilot.enable": {
-        "*": true,
-        "markdown": true,
-        "plaintext": true
-    }
+    "terminal.integrated.defaultProfile.windows": "PowerShell"
     /* ****** ****** ****** */
 }

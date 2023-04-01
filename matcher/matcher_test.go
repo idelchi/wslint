@@ -15,7 +15,7 @@ import (
 type DummyLogger struct{}
 
 // Printf prints out to nothing.
-func (DummyLogger) Printf(format string, v ...interface{}) {}
+func (DummyLogger) Printf(_ string, _ ...interface{}) {}
 
 // Helper function to:
 // - create a named file in a given folder
