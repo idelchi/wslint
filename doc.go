@@ -5,16 +5,18 @@ Usage:
 
 	wslint [flags] [path ...]
 
+You can specify one or more glob patterns (or simply paths) as path arguments.
+
+Use quotes to avoid shell expansion.
+
 The flags are:
 
-	-w		formats the files in-place. Running without this flag only lints
-	-a		include hidden files and folders (starting with a dot) in the search
-	-e		exclude pattern, comma separated
-	-j		number of parallel jobs (defaults to number of CPUs)
-	-d		debug output
-	-h		prints help
-	-v		prints version
-
-The path arguments are one or more glob patterns (or simply paths to files).
+	-w		Format the files. Without this flag, wslint only performs linting.
+	-a		Include hidden files and folders.
+	-e		Exclude patterns, separated by commas (e.g., *.log,*.tmp).
+	-j		Set the number of parallel jobs.
+	-h		Print help information.
+	-v		Print the version number.
+	-d		Show debug output.
 */
 package main
