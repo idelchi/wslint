@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   devenv:
-    image: idelchi/devenv:latest
+    image: idelchi/devenv:dev
     container_name: devenv
     hostname: devenv
     ports:

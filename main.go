@@ -236,7 +236,7 @@ func (p *WorkerPool) Start(jobs, results chan linter.Linter) {
 	waitGroup.Wait()
 
 	// Measure the time it takes to process all the files
-	p.Logger.Printf("<processed> all files in %s", time.Since(start))
+	p.Logger.Printf("<processed> all (%d) files in %s", len(p.Files), time.Since(start))
 }
 
 // worker processes jobs.

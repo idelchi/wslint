@@ -6,17 +6,17 @@ vars:
 
 includes:
   common:
-    taskfile: '.devenv/Taskfile.yml'
+    taskfile: '{{.SETTINGS_DIR}}/Taskfile.yml'
     vars:
-      CONFIG_DIR: './.devenv/config'
-      SCRIPTS_DIR: './.devenv/scripts'
+      CONFIG_DIR: '{{.SETTINGS_DIR}}/config'
+      SCRIPTS_DIR: '{{.SETTINGS_DIR}}/scripts'
     aliases: [ci]
 
   go:
-    taskfile: '.devenv/taskfiles/Taskfile.go.yml'
+    taskfile: '{{.SETTINGS_DIR}}/taskfiles/Taskfile.go.yml'
     vars:
-      CONFIG_DIR: './.devenv/config'
-      SCRIPTS_DIR: './.devenv/scripts'
+      CONFIG_DIR: '{{.SETTINGS_DIR}}/config'
+      SCRIPTS_DIR: '{{.SETTINGS_DIR}}/scripts'
 
 silent: true
 
