@@ -7,6 +7,7 @@ A file formatter that eliminates trailing whitespaces and ensures there is exact
 - [Overview](#overview)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Examples](#examples)
 - [Command Line Flags](#command-line-flags)
 - [Default Exclusion Patterns](#default-exclusion-patterns)
 - [Disclaimer](#disclaimer)
@@ -25,23 +26,29 @@ wslint is designed to help keep your codebase clean and consistent by removing u
 
 You can specify one or more glob patterns (or simply paths) as path arguments.
 
+Use quotes to avoid shell expansion.
+
 ## Examples
 
-1. Lint all text files in the current directory and its subdirectories:
+Lint all files in the current directory and its subdirectories:
 
-   `wslint **/*.txt`
+    wslint "**"
 
-2. Format all `.js` and `.css` files in the `src` directory, including hidden files:
+Lint all text files in the current directory and its subdirectories:
 
-   `wslint -w -a src/*.js src/*.css`
+    wslint "**/*.txt"
 
-3. Lint all `.py` files in the `app` directory, excluding `__init__.py` files and the `tests` folder:
+Format all `.js` and `.css` files in the `src` directory, including hidden files:
 
-   `wslint -e app/**/__init__.py,app/tests/* app/**/*.py`
+    wslint -w -a "src/*.js" "src/*.css"
 
-4. Run wslint on the `my_project` directory with four parallel jobs:
+Lint all `.py` files in the `app` directory, excluding `__init__.py` files and the `tests` folder:
 
-   `wslint -j 4 my_project/**/*`
+    wslint -e "app/**/__init__.py,app/tests/**" "app/**/*.py"
+
+Run wslint on the `my_project` directory with four parallel jobs:
+
+    wslint -j 4 "my_project/**"
 
 ## Command Line Flags
 
