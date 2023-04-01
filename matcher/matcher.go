@@ -1,8 +1,5 @@
-// Package matcher provides a globbing utility, which can be used to compile a list of files that match a pattern, using
-// some convenient options, such as:
-//   - Excluding directories (e.g. .git, .vscode-server, node_modules, vendor, .task, .cache)
-//   - Excluding or including hidden folders & files.
-//   - Excluding files detected as binaries
+// Package matcher provides a utility for matching files based on glob patterns, with support for
+// excluding directories, hidden files and folders, and binary files.
 package matcher
 
 import (
@@ -18,13 +15,13 @@ import (
 	"github.com/bmatcuk/doublestar/v4"
 )
 
-// Logger allows for printing a formatted string.
+// Logger is an interface for logging formatted messages.
 type Logger interface {
 	Printf(format string, v ...interface{})
 }
 
-// Globber is a file matcher.
-// It can be used to compile a list of files that match a pattern, using exclude patterns.
+// Globber is a file matcher that compiles a list of files matching a given pattern, while
+// excluding files based on provided exclude patterns and options.
 type Globber struct {
 	// Exclude is a list of patterns that are used to exclude files.
 	Exclude []string
@@ -43,11 +40,14 @@ func (m *Globber) ListFiles() []string {
 	return m.files
 }
 
-// New returns a glob matcher with the following settings:
+// New creates a Globber with default settings, including:
 //   - Excluding the executable itself
 //   - Excluding all kinds of executables
-//   - Excluding some known directories
-//   - Excluding hidden folders & files if hidden is false.
+//   - Excluding specific known directories
+//   - Excluding hidden folders & files if the 'hidden' parameter is set to false
+//
+// The 'exclude' parameter allows specifying additional exclude patterns, and the 'logger' parameter
+// sets the logger for debug messages.
 func New(hidden bool, exclude []string, logger Logger) Globber {
 	matcher := Globber{
 		Exclude: exclude,
@@ -81,14 +81,15 @@ func New(hidden bool, exclude []string, logger Logger) Globber {
 	return matcher
 }
 
-// isBinary returns true if the given file is detected as a binary file.
+// isBinary returns true if the given file is detected as a binary file, false otherwise.
 func (m *Globber) isBinary(file string) bool {
 	fs := vfs.OS(filepath.Dir(file))
 
 	return !util.IsTextFile(fs, filepath.Base(file))
 }
 
-// isExcluded returns true if the given file is excluded by the matcher.
+// isExcluded returns the exclude pattern that the given file matches, or an empty string if the
+// file does not match any exclude patterns.
 func (m *Globber) isExcluded(file string) (pattern string) {
 	for _, pattern := range m.Exclude {
 		if matched, _ := doublestar.Match(pattern, file); matched {
@@ -99,14 +100,13 @@ func (m *Globber) isExcluded(file string) (pattern string) {
 	return
 }
 
-// contains returns true if the given file is already in the list of files.
+// contains returns true if the given file is already present in the list of matched files, false otherwise.
 func (m *Globber) contains(file string) bool {
 	return slices.Contains(m.files, file)
 }
 
-// Explicitly included files can take on the following patterns:
-//   - If the full pattern does not include a glob
-//   - If the filename does not include a glob
+// isExplicitlyIncluded returns true if the given file is considered to be explicitly included, which
+// means the full pattern and the filename do not contain any glob characters.
 func (m *Globber) isExplicitlyIncluded(file string) bool {
 	noGlobs := !strings.Contains(file, "*")
 	noGlobsInFilename := !strings.Contains(filepath.Base(file), "*")
@@ -114,8 +114,9 @@ func (m *Globber) isExplicitlyIncluded(file string) bool {
 	return noGlobs && noGlobsInFilename
 }
 
-// Match matches all files that match the given pattern, applying the options.
-// After running, the files can be found in the Files field.
+// Match finds all files matching the given pattern and applies the exclusion options. After
+// running this function, the matched files can be retrieved using the ListFiles method. Returns
+// an error if the pattern fails to match.
 func (m *Globber) Match(pattern string) (err error) {
 	// Get all files that match the pattern
 	var matches []string

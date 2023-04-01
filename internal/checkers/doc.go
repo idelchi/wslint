@@ -5,3 +5,5 @@
 // - Check for trailing whitespace
 // - Check for trailing empty line at the end of a sequence of lines
 package checkers
+
+// TODO(Idelchi): Do Rows and Error need to be exported?

@@ -8,10 +8,8 @@ services:
     hostname: devenv
     ports:
       # <host:container>
-      # GoDoc
-      - 8888:8888
-      # Go Profilers
-      - 10000-10200:10000-10200
+      - '8888:8888' # GoDoc
+      - '10000-10200:10000-10200' # Go Profilers
     network_mode: bridge
     user: user
     volumes:
