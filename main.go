@@ -57,18 +57,16 @@ func main() {
 	flag.Usage = usage
 	flag.Parse()
 
+	// Rewrite if-statements below to a switch statement
+	switch {
 	// If the -v flag is set, print the version and exit
-	if *version {
+	case *version:
 		exit(0, versionStamp)
-	}
-
 	// If no arguments are given, give an error message
-	if flag.NArg() == 0 {
+	case flag.NArg() == 0:
 		exit(1, "Error: Need to provide at least one path element")
-	}
-
 	// If the number of parallel jobs is less than 1, give an error message
-	if *parallel <= 0 {
+	case *parallel <= 0:
 		exit(1, "Error: Number of parallel jobs must be greater than 0")
 	}
 

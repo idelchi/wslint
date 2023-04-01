@@ -24,9 +24,9 @@ wslint is designed to help keep your codebase clean and consistent by removing u
 
     wslint [flags] [path ...]
 
-You can specify one or more glob patterns (or simply paths) as path arguments.
+Paths can be specified as one or more glob patterns or simple file paths.
 
-Use quotes to avoid shell expansion.
+Enclose path arguments in quotes to prevent shell expansion.
 
 ## Examples
 
