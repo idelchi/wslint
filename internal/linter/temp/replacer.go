@@ -7,10 +7,10 @@ import (
 )
 
 // Replacer represents a file replacer.
-// It contains a FileManager for the original file and the replacement file.
+// It contains a Reader for the original file and the replacement file.
 type Replacer struct {
-	Original    Manager
-	Replacement Manager
+	Original    Reader
+	Replacement Reader
 }
 
 // Close closes both files (if open).
@@ -43,6 +43,13 @@ func (r *Replacer) Close(errPtr ...*error) (err error) {
 	return
 }
 
+// NewReplacer creates a new file replacer.
+func NewReplacer(name Reader) (Replacer, error) {
+	r := Replacer{Original: name}
+
+	return r, r.Setup()
+}
+
 // Setup sets up the replacement file.
 func (r *Replacer) Setup() (err error) {
 	name := r.Original.Name
@@ -52,18 +59,13 @@ func (r *Replacer) Setup() (err error) {
 	// Get the file name
 	fileName := filepath.Base(name)
 
-	// Open the original file (is it necessary?)
-	// if err := r.Original.Open(); err != nil {
-	// 	return fmt.Errorf("failed to open original file: %w", err)
-	// }
-
 	// Create a replacement file to write the fixed file to
 	tmpFile, err := os.CreateTemp(parentDir, fileName+"-replacement-*.txt")
 	if err != nil {
 		return fmt.Errorf("failed to create temporary file: %w", err)
 	}
 
-	r.Replacement = Manager{
+	r.Replacement = Reader{
 		Name:   tmpFile.Name(),
 		file:   tmpFile,
 		reader: nil,
@@ -82,15 +84,6 @@ func (r *Replacer) Replace() (err error) {
 	// Rename the temporary file to the original file
 	if err := os.Rename(r.Replacement.Name, r.Original.Name); err != nil {
 		return fmt.Errorf("failed to rename file %q to %q: %w", r.Replacement.Name, r.Original.Name, err)
-	}
-
-	return nil
-}
-
-// Write a line to the replacement file.
-func (r *Replacer) Write(line string) error {
-	if _, err := fmt.Fprintln(r.Replacement.file, line); err != nil {
-		return fmt.Errorf("failed to write to temporary file: %w", err)
 	}
 
 	return nil

@@ -66,8 +66,14 @@ func BenchmarkTrailing(b *testing.B) {
 // FuzzHas is not the best example of a fuzzing test, but it's here for learning purposes.
 // It brought some insight into how the unicode.IsSpace function works in combination with the strings.TrimRightFunc
 // function.
-// TODO(Idelchi): Follow the example [here]: https://go.dev/doc/tutorial/fuzz
 // It explains bytes, rune, non-utf8 etc.
+// Run this test with:
+//
+//	go test -fuzz=FuzzHas ./trailing
+// For more info, see Go documentation on [fuzzing].
+//
+// [fuzzing]: https://go.dev/doc/tutorial/fuzz
+
 func FuzzHas(f *testing.F) {
 	f.Add("A line with no whitespace.")
 	f.Add("A line with whitespace.  ")

@@ -12,28 +12,28 @@ var ErrHasTrailing = errors.New("has trailing whitespace")
 // Whitespace keeps track of trailing whitespaces.
 type Whitespace struct {
 	// Row(s) where the whitespace is found.
-	Rows []int
+	rows []int
 	// Error associated with the whitespace.
-	Error error
+	error error
 }
 
 // Analyze determines if the line has trailing whitespace(s) and appends the row to the list of rows.
 func (w *Whitespace) Analyze(line string, row int) {
 	if trailing.Has(line) {
-		w.Rows = append(w.Rows, row)
+		w.rows = append(w.rows, row)
 	}
 }
 
 // Finalize evaluates the correctness of trailing whitespace(s).
 func (w *Whitespace) Finalize() {
-	if w.Rows != nil {
-		w.Error = ErrHasTrailing
+	if w.rows != nil {
+		w.error = ErrHasTrailing
 	}
 }
 
 // Results returns the rows and error associated with the whitespace.
 func (w *Whitespace) Results() ([]int, error) {
-	return w.Rows, w.Error
+	return w.rows, w.error
 }
 
 // Stop returns 0.

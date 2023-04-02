@@ -27,6 +27,11 @@ func usage() {
 // exit prints the message and exits with the specified exit code.
 func exit(code int, msg string) {
 	log.Println(msg)
+
+	if code != 0 {
+		usage()
+	}
+
 	os.Exit(code)
 }
 
@@ -129,7 +134,15 @@ func match(options Options) int {
 			file = fileRel
 		}
 
-		files = append(files, linter.New(file))
+		// Create a linter for the file
+		lint, err := linter.NewLinter(file)
+		if err != nil {
+			log.Printf("Error: %v", err)
+
+			return 1
+		}
+		// Append the linter to the slice
+		files = append(files, lint)
 
 		verboseLog.Printf("<included> %q", file)
 	}

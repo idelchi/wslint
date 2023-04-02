@@ -15,9 +15,9 @@ var (
 // Blanks keeps track of the number of blank lines at the end of the file.
 type Blanks struct {
 	// Rows are the rows (at the end) at which blank lines occur.
-	Rows []int
+	rows []int
 	// Error associated with the number of blank lines.
-	Error error
+	error error
 }
 
 // Analyze determines whether the line is blank or not, and records its row number accordingly.
@@ -26,40 +26,40 @@ func (b *Blanks) Analyze(line string, row int) {
 	line = strings.TrimSpace(line)
 	if line != "" {
 		// Not a blank line, reset the record of blank lines.
-		b.Rows = nil
+		b.rows = nil
 	} else {
 		// Blank line, record the row number.
-		b.Rows = append(b.Rows, row)
+		b.rows = append(b.rows, row)
 	}
 }
 
 // Finalize evaluates the correctness of blank lines at the end of the file.
-// If b.Rows is empty, there are no blank lines at the end of the file.
-// If b.Rows has only one element, then there is one blank line at the end of the file.
+// If b.rows is empty, there are no blank lines at the end of the file.
+// If b.rows has only one element, then there is one blank line at the end of the file.
 // Any other value, means there are too many blank lines at the end of the file.
 func (b *Blanks) Finalize() {
-	switch blanks := len(b.Rows); blanks {
+	switch blanks := len(b.rows); blanks {
 	// one blank line at the end
 	case 1:
-		b.Error = nil
+		b.error = nil
 	// no blank lines at the end
 	case 0:
-		b.Error = ErrTooFewBlanks
+		b.error = ErrTooFewBlanks
 	// more than one blank line at the end
 	default:
-		b.Error = ErrTooManyBlanks
+		b.error = ErrTooManyBlanks
 	}
 }
 
 // Results returns the rows at which blank lines occur, and the error associated with the number of blank lines.
 func (b *Blanks) Results() ([]int, error) {
-	return b.Rows, b.Error
+	return b.rows, b.error
 }
 
 // Stop returns the row at which the last useful blank line occurs.
 func (b *Blanks) Stop() int {
-	if b.Rows != nil && b.Error != nil {
-		return b.Rows[0]
+	if b.rows != nil && b.error != nil {
+		return b.rows[0]
 	}
 
 	return 0
