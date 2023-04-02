@@ -49,7 +49,6 @@ tasks:
   docker:
     - task: common:docker
 
-  # ---------
   all:
     desc: run all available tasks
     cmds:
@@ -60,8 +59,6 @@ tasks:
       - task: build
       - task: test
 
-  # default 'format & lint' target
-  # ---------
   default:
     desc: clean, format & lint
     cmds:
@@ -71,3 +68,6 @@ tasks:
 
   push:
     - task: common:push
+
+  update:
+    - task: common:git:update
