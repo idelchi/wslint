@@ -1,236 +1,119 @@
 package linter_test
 
 import (
-	"fmt"
-	"os"
 	"path/filepath"
-	"reflect"
-	"strconv"
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/idelchi/wslint/internal/checkers"
 	"github.com/idelchi/wslint/internal/linter"
-
-	"bou.ke/monkey"
 )
 
-// Create a file in a temporary folder, fill it with some content, and close it.
-func createFile(t *testing.T, file, content string) {
-	t.Helper()
-
-	if err := os.WriteFile(file, []byte(content), 0o600); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestLinter(t *testing.T) {
+// Test the File by
+// 1. Creating a file with some contents
+// 2. Creating a File to interact with the file
+// 3. Reading the file line by line
+// 4. Checking that the contents are the same.
+func TestFile(t *testing.T) {
 	t.Parallel()
 
-	tcs := []struct {
-		name    string   // Name of the test case (for logging)
-		content []string // Content of file to generate
-		errs    []error  // Errors that should be returned
-	}{
-		{
-			name: "OK",
-			content: []string{
-				"This file ends with no whitespace and a blank line at the end.",
-				"",
-			},
-		},
-		{
-			name: "Missing blank line",
-			content: []string{
-				"This file ends with no whitespace but misses a blank line at the end.",
-			},
-			errs: []error{nil, checkers.ErrTooFewBlanks},
-		},
-		{
-			name: "Many blank lines",
-			content: []string{
-				"This file ends with no whitespace but too many blank lines at the end.",
-				"",
-				"",
-			},
-			errs: []error{nil, checkers.ErrTooManyBlanks},
-		},
-		{
-			name: "All blank lines",
-			content: []string{
-				"",
-				"",
-			},
-			errs: []error{nil, checkers.ErrTooManyBlanks},
-		},
-		{
-			name: "Trailing whitespace",
-			content: []string{
-				"This file ends with trailing whitespace but a blank line at the end. ",
-				"",
-			},
-			errs: []error{checkers.ErrHasTrailing, nil},
-		},
-		{
-			name: "Whitespace and blanks issue",
-			content: []string{
-				"This file ends with whitespace and has too many blank lines at the end. ",
-				"",
-				"",
-			},
-			errs: []error{checkers.ErrHasTrailing, checkers.ErrTooManyBlanks},
-		},
-		{
-			name: "Mixed whitespace",
-			content: []string{
-				"This file ends with mixed whitespace but a blank line at the end. \t",
-				"",
-			},
-			errs: []error{checkers.ErrHasTrailing, nil},
-		},
+	// Create a file with some contents
+	filePath := filepath.Join(t.TempDir(), "test.txt")
+
+	content := []string{
+		"Line 1",
+		"Line 2",
+		"Line 3",
 	}
-	for _, tc := range tcs {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
 
-			file := filepath.Join(t.TempDir(), "test.txt")
+	createFile(t, filePath, strings.Join(content, "\n"))
 
-			createFile(t, file, strings.Join(tc.content, "\n"))
+	// Create a file File
+	file, err := linter.NewFile(filePath)
 
-			lintFile := linter.New(file)
+	// No error should occur when opening
+	require.NoError(t, err)
 
-			require.NoError(t, lintFile.Lint())
+	// Read all lines into a slice
+	rows := iterateFile(t, file)
 
-			for i, c := range lintFile.Checkers {
-				_, err := c.Results()
-				if tc.errs != nil {
-					require.Equal(t, tc.errs[i], err)
-				} else {
-					require.NoError(t, err)
-				}
-			}
-			lintFile.Summary()
-
-			// Fix the file
-			require.NoError(t, lintFile.Fix())
-			lintFile.Summary()
-
-			// Lint it again
-			lintFile = linter.New(file)
-			require.NoError(t, lintFile.Lint())
-
-			for _, c := range lintFile.Checkers {
-				_, err := c.Results()
-				require.NoError(t, err)
-			}
-			lintFile.Summary()
-		})
-	}
+	// Check that the contents are the same
+	require.Equal(t, content, rows)
 }
 
-func TestLinter_Error(t *testing.T) {
+func TestFile_Write(t *testing.T) {
 	t.Parallel()
 
-	// File doesn't exist
-	file := filepath.Join(t.TempDir(), "test.txt")
-	lintFile := linter.Linter{Name: file}
-	lintFile.InsertChecker(&checkers.Blanks{})
-	require.Error(t, lintFile.Lint())
-	lintFile.Summary()
-	require.Error(t, lintFile.Fix())
-	lintFile.Summary()
+	// Create a file with no content
+	filePath := filepath.Join(t.TempDir(), "test.txt")
+	createFile(t, filePath, "")
 
-	// Create the file
-	createFile(t, file, "This file ends with no whitespace. It however has some illegal characters.")
-	// Remove the checkers
-	lintFile.Checkers = nil
-	require.Error(t, lintFile.Lint())
-	lintFile.Summary()
-	require.Error(t, lintFile.Fix())
-	lintFile.Summary()
+	// Create a file File
+	file, err := linter.NewFile(filePath)
 
-	lintFile.Error = assert.AnError
-	require.False(t, lintFile.Summary())
-}
+	// No error should occur when opening
+	require.NoError(t, err)
 
-// TODO(Idelchi): Replace with a proper test case, not monkey-patching. It's an indicator that the code needs to be
-// refactored.
-func TestLinter_Error_MonkeyPatch(t *testing.T) { //nolint:paralleltest // Monkey patching is not thread-safe
-	// Make life easier - assume there's an environment variable called 'RUN_MONKEY_PATCH_TESTS'
-	if ok, err := strconv.ParseBool(os.Getenv("RUN_MONKEY_PATCH_TESTS")); !ok || err != nil {
-		t.Skip("Skipping test because it requires monkey patching (inlining disabled)")
+	content := []string{
+		"Line 1",
+		"Line 2",
+		"Line 3",
 	}
 
-	file := filepath.Join(t.TempDir(), "test.txt")
-	lintFile := &linter.Linter{Name: file}
-	lintFile.InsertChecker(&checkers.Blanks{})
-	// Create the file
-	createFile(t, file, "This file ends with whitespace.  ")
+	require.NoError(t, file.Write(content...))
 
-	// Monkey Patching!
-	defer monkey.UnpatchAll()
+	// Read all lines into a slice
+	rows := iterateFile(t, file)
 
-	var manager *linter.Manager
+	// Check that the contents are the same
+	// The last line is empty because the file ends with a newline
+	require.Equal(t, content, rows[:len(rows)-1])
+}
 
-	// Next in Lint
-	monkey.PatchInstanceMethod(reflect.TypeOf(manager), "Next", func(*linter.Manager) (string, error) {
-		return "", fmt.Errorf("failed to read line: %w", assert.AnError)
-	})
-	require.Error(t, lintFile.Lint())
-	monkey.UnpatchAll()
+// Test the File by
+// 1. Creating an empty folder
+// 2. Creating a File to interact with a non-existing file
+// 3. Checking that an error occurs when opening the file.
+func TestFile_ErrorFileNotExisting(t *testing.T) {
+	t.Parallel()
 
-	// Open in Fix
-	monkey.PatchInstanceMethod(reflect.TypeOf(manager), "Open", func(*linter.Manager) error {
-		return fmt.Errorf("failed to open file: %w", assert.AnError)
-	})
+	// Non-existing file
+	filePath := filepath.Join(t.TempDir(), "test.txt")
 
-	monkey.PatchInstanceMethod(reflect.TypeOf(lintFile), "Lint", func(*linter.Linter) error {
-		return nil
-	})
+	// Create a File pointing to a non-existing file
+	_, err := linter.NewFile(filePath)
 
-	require.Error(t, lintFile.Fix())
+	// Require an error when opening a non-existing file
+	require.Error(t, err)
+}
 
-	monkey.UnpatchInstanceMethod(reflect.TypeOf(manager), "Open")
+func TestFile_ErrorCloseUnopenedFile(t *testing.T) {
+	t.Parallel()
 
-	// Setup in Fix
-	var replacer *linter.Replacer
+	// Non-existing file
+	filePath := filepath.Join(t.TempDir(), "test.txt")
 
-	monkey.PatchInstanceMethod(reflect.TypeOf(replacer), "Setup", func(*linter.Replacer) error {
-		return fmt.Errorf("failed to setup file: %w", assert.AnError)
-	})
+	// Create a File pointing to a non-existing file
+	file, _ := linter.NewFile(filePath)
 
-	require.Error(t, lintFile.Fix())
+	require.Error(t, file.Close())
+}
 
-	monkey.UnpatchInstanceMethod(reflect.TypeOf(replacer), "Setup")
+func TestFile_ErrorReadClosedFile(t *testing.T) {
+	t.Parallel()
 
-	// Next in Fix
-	monkey.PatchInstanceMethod(reflect.TypeOf(manager), "Next", func(*linter.Manager) (string, error) {
-		return "", fmt.Errorf("failed to read line: %w", assert.AnError)
-	})
+	// Create a file with some contents
+	filePath := filepath.Join(t.TempDir(), "test.txt")
+	createFile(t, filePath, "no content")
 
-	require.Error(t, lintFile.Fix())
+	// Create a file File pointing to a non-existing file
+	file, _ := linter.NewFile(filePath)
 
-	monkey.UnpatchInstanceMethod(reflect.TypeOf(manager), "Next")
+	// Close the File before reading
+	require.NoError(t, file.Close())
 
-	// Write in Fix
-	monkey.PatchInstanceMethod(reflect.TypeOf(replacer), "Write", func(*linter.Replacer, string) error {
-		return fmt.Errorf("failed to write file: %w", assert.AnError)
-	})
-
-	require.Error(t, lintFile.Fix())
-
-	monkey.UnpatchInstanceMethod(reflect.TypeOf(replacer), "Write")
-
-	// Replace in Fix
-	monkey.PatchInstanceMethod(reflect.TypeOf(replacer), "Replace", func(*linter.Replacer) error {
-		return fmt.Errorf("failed to replace file: %w", assert.AnError)
-	})
-
-	require.Error(t, lintFile.Fix())
-
-	monkey.UnpatchInstanceMethod(reflect.TypeOf(replacer), "Replace")
+	// Try to read the file
+	_, err := file.Next()
+	require.Error(t, err)
 }

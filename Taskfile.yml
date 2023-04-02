@@ -17,6 +17,7 @@ includes:
     vars:
       CONFIG_DIR: '{{.SETTINGS_DIR}}/config'
       SCRIPTS_DIR: '{{.SETTINGS_DIR}}/scripts'
+      COVERAGE: 96.8%
 
 silent: true
 
@@ -45,6 +46,7 @@ tasks:
 
   test:
     - task: go:quality
+    - task: go:coverlines
 
   docker:
     - task: common:docker

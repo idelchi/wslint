@@ -1,3 +1,6 @@
+// Tests "Has" and "Trim" functions with a sequence of test cases, mixing empty lines, trailing spaces and trailing
+// tabs.
+
 package trailing_test
 
 import (
@@ -15,7 +18,7 @@ func TestTrailing(t *testing.T) {
 		name    string // Name of the test case (for logging)
 		line    string // Line to check
 		has     bool   // Whether the line has trailing whitespace
-		trimmed string // The line with trailing whitespace removed
+		trimmed string // The line with trailing whitespace (manually) removed
 	}{
 		{
 			name: "empty line",
