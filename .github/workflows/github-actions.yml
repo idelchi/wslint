@@ -1,10 +1,13 @@
 name: wslint
 on: [push, workflow_dispatch]
 
+env:
+  IMAGE: idelchi/devenv:dev
+
 jobs:
   info:
     runs-on: ubuntu-22.04
-    container: idelchi/devenv:latest
+    container: ${{ env.IMAGE }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
@@ -16,7 +19,7 @@ jobs:
   lint:
     needs: info
     runs-on: ubuntu-22.04
-    container: idelchi/devenv:latest
+    container: ${{ env.IMAGE }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
@@ -28,7 +31,7 @@ jobs:
   test:
     needs: info
     runs-on: ubuntu-22.04
-    container: idelchi/devenv:latest
+    container: ${{ env.IMAGE }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
@@ -40,7 +43,7 @@ jobs:
   build:
     needs: info
     runs-on: ubuntu-22.04
-    container: idelchi/devenv:latest
+    container: ${{ env.IMAGE }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
