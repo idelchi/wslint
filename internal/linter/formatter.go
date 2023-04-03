@@ -6,10 +6,12 @@ import (
 	"path/filepath"
 )
 
-// Formatter enables formatting of a file, by first writing to a Shadow file, and then replacing the original file with
-// the Shadow file.
+type Main = *File
+
+// Formatter enables formatting of a file, by first writing to a temporary file.
+// When the formatting is done, the original file is replaced with the temporary file.
 type Formatter struct {
-	*File
+	Main
 	Shadow *File
 }
 
@@ -18,7 +20,7 @@ func (f *Formatter) Write(line ...string) error {
 	return f.Shadow.Write(line...)
 }
 
-// Save replaces the original file with the Shadow file.
+// Save applies the changes to the original file.
 func (f *Formatter) Save() error {
 	return f.ReplaceWith(f.Shadow)
 }
@@ -42,7 +44,7 @@ func (f *Formatter) Close() (err error) {
 
 // Open opens both files.
 func (f *Formatter) Open() (err error) {
-	if errOpen := f.File.Open(); errOpen != nil {
+	if errOpen := f.Main.Open(); errOpen != nil {
 		err = fmt.Errorf("%w", errOpen)
 	}
 
@@ -63,21 +65,14 @@ func (f *Formatter) Cleanup() error {
 }
 
 // NewFormatter creates a new formatter for the given file.
-func NewFormatter(file *File) *Formatter {
-	return &Formatter{
-		File: file,
-	}
-}
-
-func (f *Formatter) PrepareForFixing() error {
-	shadow, err := CreateShadow(f.File.Name)
-	if err != nil {
-		return err
+func NewFormatter(file *File) (formatter *Formatter, err error) {
+	formatter = &Formatter{
+		Main: file,
 	}
 
-	f.Shadow = shadow
+	formatter.Shadow, err = CreateShadow(file.Name)
 
-	return nil
+	return
 }
 
 // CreateShadow creates a new shadow file for the given file.

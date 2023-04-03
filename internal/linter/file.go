@@ -14,6 +14,10 @@ type ReadWriteSeekerCloser interface {
 	io.Closer
 }
 
+type ReadStringer interface {
+	ReadString(delim byte) (string, error)
+}
+
 // File represents a wrapped management of file handling, using os.File and bufio.Reader.
 // Given a name, it can open, close and read lines from the file, until EOF.
 type File struct {
@@ -22,32 +26,18 @@ type File struct {
 	// File is the file handle.
 	File ReadWriteSeekerCloser
 	// File is the buffered reader.
-	Reader *bufio.Reader
+	Reader ReadStringer
 	// done is true if the file has been read to EOF.
 	done bool
 }
 
-// NewFile creates a new File and opens it for reading.
+// NewFile creates a new file and opens it for reading.
 func NewFile(name string) (*File, error) {
 	f := &File{
 		Name: name,
 	}
 
 	return f, f.Open()
-}
-
-func (f *File) Reset() (err error) {
-	_, err = f.File.Seek(0, io.SeekStart)
-	f.done = false
-
-	return
-}
-
-// Exists returns true if the file exists.
-func (f *File) Exists() bool {
-	_, err := os.Stat(f.Name)
-
-	return !errors.Is(err, os.ErrNotExist)
 }
 
 // Open the file for reading.
@@ -60,13 +50,25 @@ func (f *File) Open() (err error) {
 		return fmt.Errorf("file manager failed to: %w", err)
 	}
 
-	f.Reader = bufio.NewReader(f.File)
+	return f.Reset()
+}
 
-	if err := f.Reset(); err != nil {
+// Reset resets the file to the beginning and assigns a fresh reader.
+func (f *File) Reset() error {
+	f.Reader = bufio.NewReader(f.File)
+	f.done = false
+	if _, err := f.File.Seek(0, io.SeekStart); err != nil {
 		return fmt.Errorf("failed to reset file: %w", err)
 	}
 
-	return
+	return nil
+}
+
+// Exists returns true if the file exists.
+func (f *File) Exists() bool {
+	_, err := os.Stat(f.Name)
+
+	return !errors.Is(err, os.ErrNotExist)
 }
 
 // HasLines returns true if there are lines available to read.

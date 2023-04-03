@@ -86,11 +86,11 @@ func TestLinter(t *testing.T) {
 
 			createFile(t, file, strings.Join(tc.content, "\n"))
 
-			lintFile, err := linter.NewLinter(file)
+			lintFile := linter.NewLinter(file)
 
-			require.NoError(t, err)
+			reader, formatter := NewReaderFormatter(t, file)
 
-			require.NoError(t, lintFile.Lint())
+			require.NoError(t, lintFile.Lint(reader))
 
 			for i, c := range lintFile.Checkers {
 				_, err := c.Results()
@@ -103,13 +103,12 @@ func TestLinter(t *testing.T) {
 			lintFile.Summary()
 
 			// Fix the file
-			require.NoError(t, lintFile.Fix())
+			require.NoError(t, lintFile.Fix(formatter))
 			lintFile.Summary()
 
 			// Lint it again
-			lintFile, err = linter.NewLinter(file)
-			require.NoError(t, err)
-			require.NoError(t, lintFile.Lint())
+			lintFile = linter.NewLinter(file)
+			require.NoError(t, lintFile.Lint(reader))
 
 			for _, c := range lintFile.Checkers {
 				_, err := c.Results()
@@ -120,21 +119,23 @@ func TestLinter(t *testing.T) {
 	}
 }
 
+// NewReaderFormatter creates a new reader and formatter for the given file.
+func NewReaderFormatter(t *testing.T, file string) (*linter.File, *linter.Formatter) {
+	reader, err := linter.NewFile(file)
+	require.NoError(t, err)
+
+	formatter, err := linter.NewFormatter(reader)
+	require.NoError(t, err)
+
+	return reader, formatter
+}
+
 func TestLinter_InsertChecker(t *testing.T) {
 	t.Parallel()
 
 	lintFile := linter.Linter{}
 	lintFile.InsertChecker(&checkers.Blanks{})
 	require.Len(t, lintFile.Checkers, 1)
-}
-
-func TestLinter_ErrorFileNotExisting(t *testing.T) {
-	t.Parallel()
-
-	lintFile, err := linter.NewLinter(filepath.Join(t.TempDir(), "test.txt"))
-	require.Error(t, err)
-	require.Error(t, lintFile.Fix())
-	lintFile.Summary()
 }
 
 func TestLinter_ErrorNoCheckersConfigured(t *testing.T) {
@@ -144,7 +145,11 @@ func TestLinter_ErrorNoCheckersConfigured(t *testing.T) {
 	filePath := filepath.Join(t.TempDir(), "test.txt")
 	createFile(t, filePath, "This file ends with no whitespace.")
 	lintFile := linter.Linter{Name: filePath}
-	require.Error(t, lintFile.Fix())
+
+	reader, formatter := NewReaderFormatter(t, lintFile.Name)
+
+	require.Error(t, lintFile.Lint(reader))
+	require.Error(t, lintFile.Fix(formatter))
 }
 
 func TestLinter_ErrorSummary(t *testing.T) {
