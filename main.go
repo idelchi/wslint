@@ -139,7 +139,8 @@ func match(options Options) int {
 			log.Printf("Error: %v", err)
 		}
 
-		lint := linter.NewLinter(linter.NewFormatter(reader))
+		lint := linter.NewLinter(file)
+		lint.File = reader
 
 		// Append the linter to the slice
 		files = append(files, *lint)
@@ -256,13 +257,32 @@ func worker(
 	jobsProcessed := 0
 
 	for file := range files {
-		logger.Printf("<processing> %q", file.File.Name)
+		logger.Printf("<processing> %q", file.Name)
 
-		if fix {
-			file.Error = file.Fix()
-		} else {
-			file.Error = file.Lint()
-		}
+		func() {
+			var err error
+			defer func() {
+				file.Error = err
+			}()
+
+			var reader *linter.File
+
+			reader, err = linter.NewFile(file.Name)
+			if err != nil {
+				return
+			}
+
+			if file.Error = file.Lint(reader); file.Error != nil {
+				return
+			}
+
+			if fix && file.HasIssues() {
+				var formatter *linter.Formatter
+				if formatter, err = linter.NewFormatter(reader); err == nil {
+					err = file.Fix(formatter)
+				}
+			}
+		}()
 
 		results <- file
 

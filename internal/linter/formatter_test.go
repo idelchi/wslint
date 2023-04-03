@@ -37,7 +37,9 @@ func TestFormatter(t *testing.T) {
 	// Create a shadow
 	require.NoError(t, err)
 
-	formatter := linter.NewFormatter(file)
+	formatter, err := linter.NewFormatter(file)
+
+	require.NoError(t, err)
 
 	contentReverse := []string{}
 

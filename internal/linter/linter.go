@@ -19,16 +19,31 @@ type Checker interface {
 	Stop() int
 }
 
+type Fixable interface {
+	Lintable
+	Write(...string) error
+	Save() error
+}
+
+type Lintable interface {
+	Open() error
+	Close() error
+	HasLines() bool
+	Next() (string, error)
+}
+
 // Linter represents a file linter.
 type Linter struct {
-	// File to process.
-	File Formatter
+	// Name contains the name of file to lint.
+	Name string
 	// Checkers contains the checkers to be used.
 	Checkers []Checker
 	// Error contains the error, if any.
 	Error error
 	// Touched is a flag whether the file has been touched.
 	Touched bool
+	// Reader
+	File *File
 }
 
 // InsertChecker adds a checker to the list of checkers in use.
@@ -37,14 +52,14 @@ func (l *Linter) InsertChecker(c Checker) {
 }
 
 // NewLinter creates a new linter, with the default checkers.
-func NewLinter(file *Formatter) *Linter {
+func NewLinter(name string) *Linter {
 	defaultCheckers := []Checker{
 		&checkers.Whitespace{},
 		&checkers.Blanks{},
 	}
 
 	return &Linter{
-		File:     *file,
+		Name:     name,
 		Checkers: defaultCheckers,
 	}
 }
@@ -54,15 +69,11 @@ func (l *Linter) HasCheckers() bool {
 	return l.Checkers != nil && len(l.Checkers) > 0
 }
 
-// Lint checks the file .
-func (l *Linter) Lint() (err error) {
+// Lint checks the file.
+func (l *Linter) Lint(file Lintable) (err error) {
 	if !l.HasCheckers() {
 		return ErrNoCheckers
 	}
-
-	file := l.File
-
-	file.Shadow = file.File
 
 	if err := file.Open(); err != nil {
 		return err
@@ -91,41 +102,32 @@ func (l *Linter) Lint() (err error) {
 // ErrNoCheckers is returned when no checkers have been configured.
 var ErrNoCheckers = errors.New("no checkers configured")
 
-// checkErrs takes a list of errors and returns false if all errors are nil.
-func checkErrs(errs ...error) bool {
-	for _, err := range errs {
+func (l *Linter) GetIssues() (rows [][]int, errs []error) {
+	for _, c := range l.Checkers {
+		row, err := c.Results()
 		if err != nil {
-			return true
+			rows = append(rows, row)
+			errs = append(errs, err)
 		}
 	}
 
-	return false
+	return
+}
+
+// HasIssues takes a list of errors and returns false if all errors are nil.
+func (l *Linter) HasIssues() bool {
+	_, errors := l.GetIssues()
+
+	return len(errors) > 0
 }
 
 // Fix fixes the file by removing trailing whitespaces and blank lines.
 //
 //nolint:cyclop,funlen
-func (l *Linter) Fix() (err error) {
-	if err = l.Lint(); err != nil {
-		return err
+func (l *Linter) Fix(file Fixable) (err error) {
+	if !l.HasCheckers() {
+		return ErrNoCheckers
 	}
-
-	// Array of errors. If any of the checkers have found errors, they will be added to this array.
-	errs := make([]error, len(l.Checkers))
-
-	// If none of the checkers have found any errors, there's nothing to fix and we can return.
-	for i, c := range l.Checkers {
-		_, errs[i] = c.Results()
-	}
-
-	// If there are no errors, return.
-	if !checkErrs(errs...) {
-		return nil
-	}
-
-	file := l.File
-
-	file.PrepareForFixing()
 
 	if err := file.Open(); err != nil {
 		return err
@@ -193,29 +195,21 @@ func (l *Linter) Fix() (err error) {
 func (l *Linter) Summary() (ok bool) {
 	// If the file itself had an error, print it and return.
 	if err := l.Error; err != nil {
-		log.Println(l.File.Name)
+		log.Println(l.Name)
 		log.Println(err)
 
 		return
 	}
 
-	ok = true
-
-	messages := []string{}
-
-	for _, c := range l.Checkers {
-		rows, err := c.Results()
-		if err != nil {
-			messages = append(messages, fmt.Sprintf("- %v: at row(s): %v", err, rows))
-			ok = false
-		}
-	}
+	ok = !l.HasIssues()
 
 	if !ok {
-		log.Println(l.File.Name)
+		log.Println(l.Name)
 
-		for _, m := range messages {
-			log.Println(m)
+		rows, err := l.GetIssues()
+
+		for i := range err {
+			log.Printf("- %v: at row(s): %v", err[i], rows[i])
 		}
 	}
 
