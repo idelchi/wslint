@@ -13,20 +13,16 @@ import (
 func createFile(t *testing.T, file, content string) {
 	t.Helper()
 
-	if err := os.WriteFile(file, []byte(content), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, os.WriteFile(file, []byte(content), 0o600))
 }
 
 // helper function to iterate the file until EOF, and return the lines read.
-func iterateFile(t *testing.T, file linter.File) []string {
+func iterateFile(t *testing.T, file *linter.File) []string {
 	t.Helper()
 
 	rows := make([]string, 0)
 
-	if err := file.Reset(); err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, file.Reset())
 
 	for file.HasLines() {
 		line, err := file.Next()
