@@ -134,15 +134,15 @@ func match(options Options) int {
 			file = fileRel
 		}
 
-		// Create a linter for the file
-		lint, err := linter.NewLinter(file)
+		reader, err := linter.NewFile(file)
 		if err != nil {
 			log.Printf("Error: %v", err)
-
-			return 1
 		}
+
+		lint := linter.NewLinter(linter.NewFormatter(reader))
+
 		// Append the linter to the slice
-		files = append(files, lint)
+		files = append(files, *lint)
 
 		verboseLog.Printf("<included> %q", file)
 	}
@@ -256,7 +256,7 @@ func worker(
 	jobsProcessed := 0
 
 	for file := range files {
-		logger.Printf("<processing> %q", file.Name)
+		logger.Printf("<processing> %q", file.File.Name)
 
 		if fix {
 			file.Error = file.Fix()

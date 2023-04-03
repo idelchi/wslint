@@ -19,28 +19,16 @@ type Checker interface {
 	Stop() int
 }
 
-// type File interface {
-// 	Name() string
-// 	Read() ([]string, error)
-// 	Open() error
-// 	Close(*error) error
-// 	Write(string) error
-// 	Next() (string, error)
-// 	HasLines() bool
-// 	Finish() error
-// }
-
 // Linter represents a file linter.
 type Linter struct {
-	// Name of the file to lint.
-	Name string
+	// File to process.
+	File Formatter
 	// Checkers contains the checkers to be used.
 	Checkers []Checker
 	// Error contains the error, if any.
 	Error error
 	// Touched is a flag whether the file has been touched.
 	Touched bool
-	File    File
 }
 
 // InsertChecker adds a checker to the list of checkers in use.
@@ -49,18 +37,19 @@ func (l *Linter) InsertChecker(c Checker) {
 }
 
 // NewLinter creates a new linter, with the default checkers.
-func NewLinter(file File) *Linter {
+func NewLinter(file *Formatter) *Linter {
 	defaultCheckers := []Checker{
 		&checkers.Whitespace{},
 		&checkers.Blanks{},
 	}
 
 	return &Linter{
-		File:     file,
+		File:     *file,
 		Checkers: defaultCheckers,
 	}
 }
 
+// HasCheckers returns true if the linter has checkers configured.
 func (l *Linter) HasCheckers() bool {
 	return l.Checkers != nil && len(l.Checkers) > 0
 }
@@ -73,12 +62,13 @@ func (l *Linter) Lint() (err error) {
 
 	file := l.File
 
-	defer file.Close(&err) //nolint:errcheck // The error is checked, with the &err parameter.
+	file.Shadow = file.File
 
-	// Open the file
-	if err = file.Open(); err != nil {
-		return fmt.Errorf("failed to lint: %w", err)
+	if err := file.Open(); err != nil {
+		return err
 	}
+
+	defer file.Close()
 
 	for _, c := range l.Checkers {
 		defer c.Finalize()
@@ -101,6 +91,17 @@ func (l *Linter) Lint() (err error) {
 // ErrNoCheckers is returned when no checkers have been configured.
 var ErrNoCheckers = errors.New("no checkers configured")
 
+// checkErrs takes a list of errors and returns false if all errors are nil.
+func checkErrs(errs ...error) bool {
+	for _, err := range errs {
+		if err != nil {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Fix fixes the file by removing trailing whitespaces and blank lines.
 //
 //nolint:cyclop,funlen
@@ -109,33 +110,35 @@ func (l *Linter) Fix() (err error) {
 		return err
 	}
 
+	// Array of errors. If any of the checkers have found errors, they will be added to this array.
+	errs := make([]error, len(l.Checkers))
+
 	// If none of the checkers have found any errors, there's nothing to fix and we can return.
-	for _, c := range l.Checkers {
-		_, errC := c.Results()
-		if errC != nil {
-			err = errC
-		}
+	for i, c := range l.Checkers {
+		_, errs[i] = c.Results()
 	}
 
 	// If there are no errors, return.
-	if err == nil {
+	if !checkErrs(errs...) {
 		return nil
 	}
 
 	file := l.File
 
-	defer file.Close(&err) //nolint:errcheck // The error is checked, with the &err parameter.
-	// Open the file
-	if err = file.Open(); err != nil {
-		return err //cover:ignore
+	file.PrepareForFixing()
+
+	if err := file.Open(); err != nil {
+		return err
 	}
+
+	defer file.Close()
 
 	// For each checker, check if a stop row has been set.
 	// This is used to stop the loop when the last error has been fixed.
-	stops := make([]int, 0, len(l.Checkers))
+	stops := make([]int, len(l.Checkers))
 
-	for _, c := range l.Checkers {
-		stops = append(stops, c.Stop())
+	for i, c := range l.Checkers {
+		stops[i] = c.Stop()
 	}
 
 	// Sort the stop rows to get the highest one
@@ -177,7 +180,7 @@ func (l *Linter) Fix() (err error) {
 		}
 	}
 
-	if err = file.Finish(); err != nil {
+	if err = file.Save(); err != nil {
 		return //cover:ignore
 	}
 
@@ -190,7 +193,7 @@ func (l *Linter) Fix() (err error) {
 func (l *Linter) Summary() (ok bool) {
 	// If the file itself had an error, print it and return.
 	if err := l.Error; err != nil {
-		log.Println(l.Name)
+		log.Println(l.File.Name)
 		log.Println(err)
 
 		return
@@ -209,7 +212,7 @@ func (l *Linter) Summary() (ok bool) {
 	}
 
 	if !ok {
-		log.Println(l.Name)
+		log.Println(l.File.Name)
 
 		for _, m := range messages {
 			log.Println(m)

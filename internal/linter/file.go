@@ -9,22 +9,27 @@ import (
 	"strings"
 )
 
+type ReadWriteSeekerCloser interface {
+	io.ReadWriteSeeker
+	io.Closer
+}
+
 // File represents a wrapped management of file handling, using os.File and bufio.Reader.
 // Given a name, it can open, close and read lines from the file, until EOF.
 type File struct {
 	// Name is the name of the file to open. Should be a full or relative path.
 	Name string
 	// File is the file handle.
-	File *os.File
-	// File is the buffered Readef.
+	File ReadWriteSeekerCloser
+	// File is the buffered reader.
 	Reader *bufio.Reader
 	// done is true if the file has been read to EOF.
 	done bool
 }
 
 // NewFile creates a new File and opens it for reading.
-func NewFile(name string) (File, error) {
-	f := File{
+func NewFile(name string) (*File, error) {
+	f := &File{
 		Name: name,
 	}
 
@@ -33,8 +38,16 @@ func NewFile(name string) (File, error) {
 
 func (f *File) Reset() (err error) {
 	_, err = f.File.Seek(0, io.SeekStart)
+	f.done = false
 
 	return
+}
+
+// Exists returns true if the file exists.
+func (f *File) Exists() bool {
+	_, err := os.Stat(f.Name)
+
+	return !errors.Is(err, os.ErrNotExist)
 }
 
 // Open the file for reading.
@@ -48,6 +61,10 @@ func (f *File) Open() (err error) {
 	}
 
 	f.Reader = bufio.NewReader(f.File)
+
+	if err := f.Reset(); err != nil {
+		return fmt.Errorf("failed to reset file: %w", err)
+	}
 
 	return
 }
@@ -109,28 +126,31 @@ func (f *File) Rename(name string) error {
 
 	f.Name = name
 
-	return f.Open()
+	return nil
 }
 
-type Renameable interface {
-	Name() string
-	Rename(string) error
-	io.Closer
-}
+// ReplaceWith replaces the current file with the given file.
+func (f *File) ReplaceWith(replacement *File) (err error) {
+	name := f.Name
 
-// Replace replaces two NamedCloser files.
-func Replace(o, r Renameable) (err error) {
-	name := o.Name()
-
-	// Close the original file
-	if err = o.Close(); err != nil {
+	// Close the original
+	if err = f.Close(); err != nil {
 		return fmt.Errorf("failed to replace %s: %w", name, err)
 	}
 
-	// Rename the replacement file
-	if err = r.Rename(name); err != nil {
-		return fmt.Errorf("failed to replace %s: %w", name, err)
+	return replacement.Rename(name)
+}
+
+// Save simply closes the file, since all writes are done in place.
+func (f *File) Save() error {
+	return f.Close()
+}
+
+// Delete removes the file from the filesystem.
+func (f *File) Delete() error {
+	if err := f.Close(); err != nil {
+		return fmt.Errorf("failed to close file: %w", err)
 	}
 
-	return
+	return os.Remove(f.Name)
 }
