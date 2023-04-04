@@ -29,6 +29,8 @@ type Globber struct {
 	Logger Logger
 	// files is the list of files that are added to the matcher, after matching and applying the options.
 	files []string
+	// extraExcludes functions
+	extraExcludes map[string]func(string) bool
 }
 
 // ListFiles lists all files found by the Globber.
@@ -78,11 +80,15 @@ func New(hidden bool, exclude []string, logger Logger) Globber {
 		matcher.Exclude = append(matcher.Exclude, "**/.*", "**/.*/**/*")
 	}
 
+	matcher.extraExcludes = map[string]func(string) bool{
+		"detected as binary": isBinary,
+	}
+
 	return matcher
 }
 
 // isBinary returns true if the given file is detected as a binary file, false otherwise.
-func (m *Globber) isBinary(file string) bool {
+func isBinary(file string) bool {
 	fs := vfs.OS(filepath.Dir(file))
 
 	return !util.IsTextFile(fs, filepath.Base(file))
@@ -125,6 +131,7 @@ func (m *Globber) Match(pattern string) (err error) {
 		return fmt.Errorf("failed to match pattern %q: %w", pattern, err)
 	}
 
+outer:
 	for _, match := range matches {
 		// Convert to absolute path
 		match, _ = filepath.Abs(match)
@@ -140,9 +147,14 @@ func (m *Globber) Match(pattern string) (err error) {
 			m.files = append(m.files, match)
 		case m.isExcluded(match) != "":
 			m.Logger.Printf("<skipped> %q <matches exclude pattern> %q", match, m.isExcluded(match))
-		case m.isBinary(match):
-			m.Logger.Printf("<skipped> %q <detected as binary>", match)
 		default:
+			for name, fn := range m.extraExcludes {
+				if fn(match) {
+					m.Logger.Printf("<skipped> %q <%s>", match, name)
+
+					continue outer
+				}
+			}
 			// Append the match to the matches slice
 			m.files = append(m.files, match)
 		}
