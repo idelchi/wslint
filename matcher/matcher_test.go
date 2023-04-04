@@ -21,7 +21,7 @@ func (DummyLogger) Printf(_ string, _ ...interface{}) {}
 // - create a named file in a given folder
 // - fill it with some content
 // Returns the absolute path to the file.
-func createFile(t *testing.T, dir, name, content string) (file string) {
+func CreateTempFile(t *testing.T, dir, name, content string) (file string) {
 	t.Helper()
 
 	// Construct the path to the new file
@@ -108,7 +108,7 @@ func TestGlobber_Match(t *testing.T) {
 
 			// Create the files.
 			for i := range tc.files {
-				_ = createFile(t, dir, tc.files[i], tc.content[i])
+				_ = CreateTempFile(t, dir, tc.files[i], tc.content[i])
 			}
 
 			// Create the globber.
@@ -138,7 +138,7 @@ func TestGlobber_Match_CornerCases(t *testing.T) {
 
 	// Create one file.
 	dir := t.TempDir()
-	file := createFile(t, dir, "test.txt", "test")
+	file := CreateTempFile(t, dir, "test.txt", "test")
 
 	// Create a list of test cases.
 	tcs := []struct {

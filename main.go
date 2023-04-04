@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -134,13 +135,7 @@ func match(options Options) int {
 			file = fileRel
 		}
 
-		reader, err := linter.NewFile(file)
-		if err != nil {
-			log.Printf("Error: %v", err)
-		}
-
 		lint := linter.NewLinter(file)
-		lint.File = reader
 
 		// Append the linter to the slice
 		files = append(files, *lint)
@@ -244,6 +239,10 @@ func (p *WorkerPool) Start(jobs, results chan linter.Linter) {
 
 	// Measure the time it takes to process all the files
 	p.Logger.Printf("<processed> all (%d) files in %s", len(p.Files), time.Since(start))
+
+	// Wait for user to press enter
+	fmt.Println("Press enter to continue...")
+	fmt.Scanln()
 }
 
 // worker processes jobs.
@@ -265,22 +264,17 @@ func worker(
 				file.Error = err
 			}()
 
-			var reader *linter.File
-
-			reader, err = linter.NewFile(file.Name)
-			if err != nil {
-				return
-			}
+			reader := &linter.Reader{}
 
 			if file.Error = file.Lint(reader); file.Error != nil {
 				return
 			}
 
 			if fix && file.HasIssues() {
-				var formatter *linter.Formatter
-				if formatter, err = linter.NewFormatter(reader); err == nil {
-					err = file.Fix(formatter)
+				writer := &linter.Writer{
+					Main: reader,
 				}
+				err = file.Fix(writer)
 			}
 		}()
 

@@ -20,20 +20,20 @@ type ReadStringer interface {
 
 // File represents a wrapped management of file handling, using os.File and bufio.Reader.
 // Given a name, it can open, close and read lines from the file, until EOF.
-type File struct {
+type Reader struct {
 	// Name is the name of the file to open. Should be a full or relative path.
 	Name string
 	// File is the file handle.
-	File ReadWriteSeekerCloser
+	file ReadWriteSeekerCloser
 	// File is the buffered reader.
-	Reader ReadStringer
+	buffer ReadStringer
 	// done is true if the file has been read to EOF.
 	done bool
 }
 
-// NewFile creates a new file and opens it for reading.
-func NewFile(name string) (*File, error) {
-	f := &File{
+// NewReader opens a file for reading (and writing).
+func NewReader(name string) (*Reader, error) {
+	f := &Reader{
 		Name: name,
 	}
 
@@ -42,43 +42,34 @@ func NewFile(name string) (*File, error) {
 
 // Open the file for reading.
 // Returns an error if the file doesn't exist.
-func (f *File) Open() (err error) {
+func (f *Reader) Open() (err error) {
 	// Open the file in read/write mode
-	f.File, err = os.OpenFile(f.Name, os.O_RDWR, os.ModeAppend)
+	f.file, err = os.OpenFile(f.Name, os.O_RDWR, os.ModeAppend)
 
-	if err != nil || f.File == nil {
+	if err != nil || f.file == nil {
 		return fmt.Errorf("file manager failed to: %w", err)
 	}
 
 	return f.Reset()
 }
 
-// Reset resets the file to the beginning and assigns a fresh reader.
-func (f *File) Reset() error {
-	f.Reader = bufio.NewReader(f.File)
-	f.done = false
-	if _, err := f.File.Seek(0, io.SeekStart); err != nil {
-		return fmt.Errorf("failed to reset file: %w", err)
+// Close closes the file.
+// Returns nil if the file is already closed.
+func (f *Reader) Close() error {
+	switch err := f.file.Close(); {
+	// If the file is already closed, suppress the error and return nil
+	case errors.Is(err, os.ErrClosed):
+		return nil
+	case err != nil:
+		return fmt.Errorf("failed to close: %w", err)
+	default:
+		return nil
 	}
-
-	return nil
-}
-
-// Exists returns true if the file exists.
-func (f *File) Exists() bool {
-	_, err := os.Stat(f.Name)
-
-	return !errors.Is(err, os.ErrNotExist)
-}
-
-// HasLines returns true if there are lines available to read.
-func (f *File) HasLines() bool {
-	return !f.done
 }
 
 // Next reads the next line from the file.
-func (f *File) Next() (line string, err error) {
-	line, err = f.Reader.ReadString('\n')
+func (f *Reader) Next() (line string, err error) {
+	line, err = f.buffer.ReadString('\n')
 	line = strings.TrimRight(strings.TrimRight(line, "\r\n"), "\n")
 
 	switch {
@@ -92,24 +83,26 @@ func (f *File) Next() (line string, err error) {
 	return
 }
 
-// Close closes the file.
-// Returns nil if the file is already closed.
-func (f *File) Close() error {
-	switch err := f.File.Close(); {
-	// If the file is already closed, suppress the error and return nil
-	case errors.Is(err, os.ErrClosed):
-		return nil
-	case err != nil:
-		return fmt.Errorf("failed to close: %w", err)
-	default:
-		return nil
+// HasLines returns true if there are lines available to read.
+func (f *Reader) HasLines() bool {
+	return !f.done
+}
+
+// Reset resets the file to the beginning and assigns a fresh reader.
+func (f *Reader) Reset() error {
+	f.buffer = bufio.NewReader(f.file)
+	f.done = false
+	if _, err := f.file.Seek(0, io.SeekStart); err != nil {
+		return fmt.Errorf("failed to reset file: %w", err)
 	}
+
+	return nil
 }
 
 // Write writes a line to the file.
-func (f *File) Write(lines ...string) error {
+func (f *Reader) Write(lines ...string) error {
 	for _, line := range lines {
-		if _, err := fmt.Fprintln(f.File, line); err != nil {
+		if _, err := fmt.Fprintln(f.file, line); err != nil {
 			return fmt.Errorf("failed to write to file: %w", err)
 		}
 	}
@@ -117,7 +110,7 @@ func (f *File) Write(lines ...string) error {
 	return nil
 }
 
-func (f *File) Rename(name string) error {
+func (f *Reader) Rename(name string) error {
 	if err := f.Close(); err != nil {
 		return fmt.Errorf("failed to close file: %w", err)
 	}
@@ -132,7 +125,7 @@ func (f *File) Rename(name string) error {
 }
 
 // ReplaceWith replaces the current file with the given file.
-func (f *File) ReplaceWith(replacement *File) (err error) {
+func (f *Reader) ReplaceWith(replacement *Reader) (err error) {
 	name := f.Name
 
 	// Close the original
@@ -144,15 +137,14 @@ func (f *File) ReplaceWith(replacement *File) (err error) {
 }
 
 // Save simply closes the file, since all writes are done in place.
-func (f *File) Save() error {
+func (f *Reader) Save() error {
 	return f.Close()
 }
 
-// Delete removes the file from the filesystem.
-func (f *File) Delete() error {
-	if err := f.Close(); err != nil {
-		return fmt.Errorf("failed to close file: %w", err)
-	}
+// Load opens the file.
+// Returns an error if the file doesn't exist.
+func (f *Reader) Load(name string) error {
+	f.Name = name
 
-	return os.Remove(f.Name)
+	return f.Open()
 }

@@ -6,28 +6,28 @@ import (
 	"path/filepath"
 )
 
-type Main = *File
+type Main = *Reader
 
 // Formatter enables formatting of a file, by first writing to a temporary file.
 // When the formatting is done, the original file is replaced with the temporary file.
-type Formatter struct {
+type Writer struct {
 	Main
-	Shadow *File
+	Shadow *Reader
 }
 
 // Write writes a line to the Shadow file.
-func (f *Formatter) Write(line ...string) error {
+func (f *Writer) Write(line ...string) error {
 	return f.Shadow.Write(line...)
 }
 
 // Save applies the changes to the original file.
-func (f *Formatter) Save() error {
+func (f *Writer) Save() error {
 	return f.ReplaceWith(f.Shadow)
 }
 
 // Close closes both files.
-func (f *Formatter) Close() (err error) {
-	if errClose := f.File.Close(); errClose != nil {
+func (f *Writer) Close() (err error) {
+	if errClose := f.Main.Close(); errClose != nil {
 		err = fmt.Errorf("%w", errClose)
 	}
 
@@ -43,7 +43,7 @@ func (f *Formatter) Close() (err error) {
 }
 
 // Open opens both files.
-func (f *Formatter) Open() (err error) {
+func (f *Writer) Open() (err error) {
 	if errOpen := f.Main.Open(); errOpen != nil {
 		err = fmt.Errorf("%w", errOpen)
 	}
@@ -59,31 +59,37 @@ func (f *Formatter) Open() (err error) {
 	return
 }
 
-// Cleanup removes the Shadow file.
-func (f *Formatter) Cleanup() error {
-	return f.Shadow.Delete()
+// Load loads both files.
+func (f *Writer) Load(name string) (err error) {
+	if errLoad := f.Main.Load(name); errLoad != nil {
+		err = fmt.Errorf("%w", errLoad)
+	}
+
+	f.Shadow, err = CreateShadow(name)
+
+	return
 }
 
-// NewFormatter creates a new formatter for the given file.
-func NewFormatter(file *File) (formatter *Formatter, err error) {
-	formatter = &Formatter{
+// NewWriter creates a new formatter for the given file.
+func NewWriter(file *Reader) (formatter *Writer, err error) {
+	formatter = &Writer{
 		Main: file,
 	}
 
-	formatter.Shadow, err = CreateShadow(file.Name)
+	// formatter.Shadow, err = CreateShadow(file.Name)
 
 	return
 }
 
 // CreateShadow creates a new shadow file for the given file.
-func CreateShadow(name string) (shadow *File, err error) {
+func CreateShadow(name string) (shadow *Reader, err error) {
 	// Create a replacement file to write the fixed file to
 	tmpFile, err := os.CreateTemp(filepath.Dir(name), filepath.Base(name)+"-replacement-*.txt")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temporary file: %w", err)
 	}
 
-	if shadow, err = NewFile(tmpFile.Name()); err != nil {
+	if shadow, err = NewReader(tmpFile.Name()); err != nil {
 		return nil, fmt.Errorf("failed to create temporary file: %w", err)
 	}
 
