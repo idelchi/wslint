@@ -19,17 +19,18 @@ type Checker interface {
 	Stop() int
 }
 
-type Fixable interface {
-	Lintable
+type Writeable interface {
+	Readable
 	Write(...string) error
 	Save() error
 }
 
-type Lintable interface {
+type Readable interface {
 	Open() error
 	Close() error
 	HasLines() bool
 	Next() (string, error)
+	Load(string) error
 }
 
 // Linter represents a file linter.
@@ -42,8 +43,6 @@ type Linter struct {
 	Error error
 	// Touched is a flag whether the file has been touched.
 	Touched bool
-	// Reader
-	File *File
 }
 
 // InsertChecker adds a checker to the list of checkers in use.
@@ -70,9 +69,13 @@ func (l *Linter) HasCheckers() bool {
 }
 
 // Lint checks the file.
-func (l *Linter) Lint(file Lintable) (err error) {
+func (l *Linter) Lint(file Readable) (err error) {
 	if !l.HasCheckers() {
 		return ErrNoCheckers
+	}
+
+	if err := file.Load(l.Name); err != nil {
+		return err
 	}
 
 	if err := file.Open(); err != nil {
@@ -124,9 +127,13 @@ func (l *Linter) HasIssues() bool {
 // Fix fixes the file by removing trailing whitespaces and blank lines.
 //
 //nolint:cyclop,funlen
-func (l *Linter) Fix(file Fixable) (err error) {
+func (l *Linter) Fix(file Writeable) (err error) {
 	if !l.HasCheckers() {
 		return ErrNoCheckers
+	}
+
+	if err := file.Load(l.Name); err != nil {
+		return err
 	}
 
 	if err := file.Open(); err != nil {

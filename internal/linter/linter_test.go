@@ -84,11 +84,11 @@ func TestLinter(t *testing.T) {
 
 			file := filepath.Join(t.TempDir(), "test.txt")
 
-			createFile(t, file, strings.Join(tc.content, "\n"))
+			CreateTempFile(t, file, strings.Join(tc.content, "\n"))
 
 			lintFile := linter.NewLinter(file)
 
-			reader, formatter := NewReaderFormatter(t, file)
+			reader, writer := NewReaderWriter(t, file)
 
 			require.NoError(t, lintFile.Lint(reader))
 
@@ -103,12 +103,12 @@ func TestLinter(t *testing.T) {
 			lintFile.Summary()
 
 			// Fix the file
-			require.NoError(t, lintFile.Fix(formatter))
+			require.NoError(t, lintFile.Fix(writer))
 			lintFile.Summary()
 
 			// Lint it again
 			lintFile = linter.NewLinter(file)
-			require.NoError(t, lintFile.Lint(reader))
+			require.NoError(t, lintFile.Lint(writer))
 
 			for _, c := range lintFile.Checkers {
 				_, err := c.Results()
@@ -120,14 +120,14 @@ func TestLinter(t *testing.T) {
 }
 
 // NewReaderFormatter creates a new reader and formatter for the given file.
-func NewReaderFormatter(t *testing.T, file string) (*linter.File, *linter.Formatter) {
-	reader, err := linter.NewFile(file)
+func NewReaderWriter(t *testing.T, file string) (*linter.Reader, *linter.Writer) {
+	reader, err := linter.NewReader(file)
 	require.NoError(t, err)
 
-	formatter, err := linter.NewFormatter(reader)
+	writer, err := linter.NewWriter(reader)
 	require.NoError(t, err)
 
-	return reader, formatter
+	return reader, writer
 }
 
 func TestLinter_InsertChecker(t *testing.T) {
@@ -143,13 +143,13 @@ func TestLinter_ErrorNoCheckersConfigured(t *testing.T) {
 
 	// Create the file
 	filePath := filepath.Join(t.TempDir(), "test.txt")
-	createFile(t, filePath, "This file ends with no whitespace.")
+	CreateTempFile(t, filePath, "This file ends with no whitespace.")
 	lintFile := linter.Linter{Name: filePath}
 
-	reader, formatter := NewReaderFormatter(t, lintFile.Name)
+	reader, writer := NewReaderWriter(t, lintFile.Name)
 
 	require.Error(t, lintFile.Lint(reader))
-	require.Error(t, lintFile.Fix(formatter))
+	require.Error(t, lintFile.Fix(writer))
 }
 
 func TestLinter_ErrorSummary(t *testing.T) {

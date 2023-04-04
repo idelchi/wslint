@@ -28,23 +28,23 @@ func TestFormatter(t *testing.T) {
 		"like this line.",
 	}
 
-	createFile(t, filePath, strings.Join(content, "\n"))
+	CreateTempFile(t, filePath, strings.Join(content, "\n"))
 
 	// Create a file wrapper
-	file, err := linter.NewFile(filePath)
+	file, err := linter.NewReader(filePath)
 	require.NoError(t, err)
 
 	// Create a shadow
 	require.NoError(t, err)
 
-	formatter, err := linter.NewFormatter(file)
+	formatter, err := linter.NewWriter(file)
 
 	require.NoError(t, err)
 
 	contentReverse := []string{}
 
 	// Read all lines into a slice
-	content = iterateFile(t, file)
+	content = ReadAll(t, file)
 
 	// Copy in reverse order the content to the replacement file
 	for i := len(content) - 1; i >= 0; i-- {
@@ -59,7 +59,7 @@ func TestFormatter(t *testing.T) {
 	require.NoError(t, file.Open())
 
 	// Read all lines into a slice
-	rows := iterateFile(t, file)
+	rows := ReadAll(t, file)
 
 	// Check that the contents are the same, as the reversed order
 	// Skip the last line as it is empty.
@@ -72,7 +72,7 @@ func TestFormatter_ErrorFolderNotExisting(t *testing.T) {
 	// Create a file wrapper, but pointing to a location that does not exist.
 	// This should return an error from the CreateShadow function, which fails to create the 'shadow' file.
 	filePath := filepath.Join(t.TempDir(), "no-existing-folder", "test.txt")
-	file := &linter.File{Name: filePath}
+	file := &linter.Reader{Name: filePath}
 
 	// Create a shadow
 	_, err := linter.CreateShadow(file.Name)

@@ -15,3 +15,5 @@
 .mypy_cache
 .pytests
 .secrets
+
+examples
