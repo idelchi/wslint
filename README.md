@@ -74,8 +74,9 @@ By default, wslint excludes the following patterns. These patterns represent com
 - `**/.task/**`
 - `**/.cache/**`
 - The executable itself
-- Files identified as binary
 - Folders and files starting with '`.`', unless the `-a` flag is used
+
+Files can be explicitly included by providing paths without glob patterns.
 
 ## Disclaimer
 
