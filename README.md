@@ -76,7 +76,15 @@ By default, wslint excludes the following patterns. These patterns represent com
 - The executable itself
 - Folders and files starting with '`.`', unless the `-a` flag is used
 
-Files can be explicitly included by providing paths without glob patterns.
+Files that are normally excluded can explicitly be included by:
+
+- Not using glob patterns
+- Using glob patterns in the filename portion of the path (excluding the extension)
+
+Example:
+
+    wslint ".task/*.env"
+    wslint "*.exe"
 
 ## Disclaimer
 

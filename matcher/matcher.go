@@ -80,18 +80,18 @@ func New(hidden bool, exclude []string, logger Logger) Globber {
 		matcher.Exclude = append(matcher.Exclude, "**/.*", "**/.*/**/*")
 	}
 
+	// isBinary returns true if the given file is detected as a binary file, false otherwise.
+	isBinary := func(file string) bool {
+		fs := vfs.OS(filepath.Dir(file))
+
+		return !util.IsTextFile(fs, filepath.Base(file))
+	}
+
 	matcher.extraExcludes = map[string]func(string) bool{
 		"detected as binary": isBinary,
 	}
 
 	return matcher
-}
-
-// isBinary returns true if the given file is detected as a binary file, false otherwise.
-func isBinary(file string) bool {
-	fs := vfs.OS(filepath.Dir(file))
-
-	return !util.IsTextFile(fs, filepath.Base(file))
 }
 
 // isExcluded returns the exclude pattern that the given file matches, or an empty string if the
@@ -114,10 +114,11 @@ func (m *Globber) contains(file string) bool {
 // isExplicitlyIncluded returns true if the given file is considered to be explicitly included, which
 // means the full pattern and the filename do not contain any glob characters.
 func (m *Globber) isExplicitlyIncluded(file string) bool {
-	noGlobs := !strings.Contains(file, "*")
-	noGlobsInFilename := !strings.Contains(filepath.Base(file), "*")
+	globsInPath := strings.Contains(file, "*")
+	globsInName := strings.Contains(filepath.Base(file), "*")
+	globsInExtension := strings.Contains(filepath.Ext(file), "*") || filepath.Ext(file) == ""
 
-	return noGlobs && noGlobsInFilename
+	return !globsInPath || (globsInName && !globsInExtension)
 }
 
 // Match finds all files matching the given pattern and applies the exclusion options. After
