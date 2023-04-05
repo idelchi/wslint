@@ -2,7 +2,6 @@ package linter
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -24,8 +23,6 @@ func (f *Writer) Write(line ...string) error {
 
 // Save applies the changes to the original file.
 func (f *Writer) Save() error {
-	log.Printf("Saving changes to %q (shadowed by %q)", f.Name, f.Shadow.Name)
-
 	return f.ReplaceWith(f.Shadow)
 }
 
