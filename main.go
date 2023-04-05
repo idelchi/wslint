@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -238,11 +237,8 @@ func (p *WorkerPool) Start(jobs, results chan linter.Linter) {
 	waitGroup.Wait()
 
 	// Measure the time it takes to process all the files
+	// TODO(Idelchi): Move this log message to the appear last.
 	p.Logger.Printf("<processed> all (%d) files in %s", len(p.Files), time.Since(start))
-
-	// Wait for user to press enter
-	fmt.Println("Press enter to continue...")
-	fmt.Scanln()
 }
 
 // worker processes jobs.

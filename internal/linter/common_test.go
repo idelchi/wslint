@@ -11,13 +11,6 @@ import (
 	"github.com/idelchi/wslint/internal/linter"
 )
 
-// Create a file in a temporary folder, fill it with some content, and close it.
-func createFileComplex(t *testing.T, file, content string) {
-	t.Helper()
-
-	require.NoError(t, os.WriteFile(file, []byte(content), 0o600))
-}
-
 // helper function to iterate the file until EOF, and return the lines read.
 func ReadAll(t *testing.T, file *linter.Reader) []string {
 	t.Helper()

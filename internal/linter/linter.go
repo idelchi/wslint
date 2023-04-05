@@ -19,18 +19,20 @@ type Checker interface {
 	Stop() int
 }
 
+// Writeable describes a file that can be written to.
 type Writeable interface {
 	Readable
 	Write(...string) error
 	Save() error
 }
 
+// Readable describes a file that can be read from.
 type Readable interface {
 	Open() error
 	Close() error
 	HasLines() bool
 	Next() (string, error)
-	Load(string) error
+	Load(...string) error
 }
 
 // Linter represents a file linter.
@@ -75,14 +77,15 @@ func (l *Linter) Lint(file Readable) (err error) {
 	}
 
 	if err := file.Load(l.Name); err != nil {
-		return err
+		return fmt.Errorf("error loading file: %w", err)
 	}
 
-	if err := file.Open(); err != nil {
-		return err
-	}
-
-	defer file.Close()
+	// Defer the file closing.
+	defer func() {
+		if errClose := file.Close(); err == nil && errClose != nil {
+			err = errClose
+		}
+	}()
 
 	for _, c := range l.Checkers {
 		defer c.Finalize()
@@ -91,7 +94,7 @@ func (l *Linter) Lint(file Readable) (err error) {
 	for row := 1; file.HasLines(); row++ {
 		line, err := file.Next()
 		if err != nil {
-			return fmt.Errorf("error reading file: %w", err) //cover:ignore
+			return fmt.Errorf("error reading file: %w", err)
 		}
 
 		for _, c := range l.Checkers {
@@ -105,6 +108,7 @@ func (l *Linter) Lint(file Readable) (err error) {
 // ErrNoCheckers is returned when no checkers have been configured.
 var ErrNoCheckers = errors.New("no checkers configured")
 
+// GetIssues returns a list of rows with issues and a list of errors.
 func (l *Linter) GetIssues() (rows [][]int, errs []error) {
 	for _, c := range l.Checkers {
 		row, err := c.Results()
@@ -133,14 +137,14 @@ func (l *Linter) Fix(file Writeable) (err error) {
 	}
 
 	if err := file.Load(l.Name); err != nil {
-		return err
+		return fmt.Errorf("error loading file: %w", err)
 	}
 
-	if err := file.Open(); err != nil {
-		return err
-	}
-
-	defer file.Close()
+	defer func() {
+		if errClose := file.Close(); err == nil && errClose != nil {
+			err = errClose
+		}
+	}()
 
 	// For each checker, check if a stop row has been set.
 	// This is used to stop the loop when the last error has been fixed.
@@ -165,7 +169,7 @@ func (l *Linter) Fix(file Writeable) (err error) {
 		eof := !file.HasLines()
 
 		if err != nil {
-			return fmt.Errorf("error getting next line: %w", err) //cover:ignore
+			return fmt.Errorf("error getting next line: %w", err)
 		}
 
 		// If a line contains trailing whitespace, remove it
@@ -185,12 +189,12 @@ func (l *Linter) Fix(file Writeable) (err error) {
 		}
 
 		if err := file.Write(line); err != nil {
-			return fmt.Errorf("failed to copy line %d to temporary file: %w", row, err) //cover:ignore
+			return fmt.Errorf("failed to copy line %d to temporary file: %w", row, err)
 		}
 	}
 
 	if err = file.Save(); err != nil {
-		return //cover:ignore
+		err = fmt.Errorf("failed to save temporary file: %w", err)
 	}
 
 	l.Touched = true

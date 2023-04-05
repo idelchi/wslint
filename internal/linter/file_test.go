@@ -146,6 +146,11 @@ func TestReader_Close(t *testing.T) {
 	// Create a file with some contents and hand it to the Reader
 	file, err := linter.NewReader(CreateTempFile(t))
 
+	t.Cleanup(func() {
+		// Close the file
+		require.NoError(t, file.Close())
+	})
+
 	// No error should occur when opening
 	require.NoError(t, err)
 

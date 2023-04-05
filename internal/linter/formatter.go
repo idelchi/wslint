@@ -6,9 +6,10 @@ import (
 	"path/filepath"
 )
 
+// Main is an alias for Reader, to be used as a base for other types.
 type Main = *Reader
 
-// Formatter enables formatting of a file, by first writing to a temporary file.
+// Writer enables formatting of a file, by first writing to a temporary file.
 // When the formatting is done, the original file is replaced with the temporary file.
 type Writer struct {
 	Main
@@ -60,12 +61,29 @@ func (f *Writer) Open() (err error) {
 }
 
 // Load loads both files.
-func (f *Writer) Load(name string) (err error) {
-	if errLoad := f.Main.Load(name); errLoad != nil {
-		err = fmt.Errorf("%w", errLoad)
+func (f *Writer) Load(filename ...string) (err error) {
+	name := f.Main.Name
+
+	if len(filename) > 0 {
+		name = filename[0]
 	}
 
-	f.Shadow, err = CreateShadow(name)
+	var (
+		errMain   error
+		errShadow error
+	)
+
+	if errMain = f.Main.Load(name); errMain != nil {
+		err = fmt.Errorf("%w", errMain)
+	}
+
+	if f.Shadow, errShadow = CreateShadow(name); errShadow != nil {
+		if errMain != nil {
+			err = fmt.Errorf("%w\n%w", errMain, errShadow)
+		} else {
+			err = fmt.Errorf("%w", errShadow)
+		}
+	}
 
 	return
 }
@@ -75,8 +93,6 @@ func NewWriter(file *Reader) (formatter *Writer, err error) {
 	formatter = &Writer{
 		Main: file,
 	}
-
-	// formatter.Shadow, err = CreateShadow(file.Name)
 
 	return
 }
