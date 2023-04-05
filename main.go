@@ -241,6 +241,9 @@ func (p *WorkerPool) Start(jobs, results chan linter.Linter) {
 	p.Logger.Printf("<processed> all (%d) files in %s", len(p.Files), time.Since(start))
 }
 
+// TODO(Idelchi): Rework concurrency, read
+// https://twin.sh/articles/39/go-concurrency-goroutines-worker-pools-and-throttling-made-simple
+
 // worker processes jobs.
 func worker(
 	identifier int,
