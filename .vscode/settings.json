@@ -43,6 +43,9 @@
     "prettier.configPath": ".devenv/config/.prettierrc.yml",
     /* ****** ****** ****** */
     /* ****** PYTHON ****** */
+    "[python]": {
+        "editor.formatOnType": true
+    },
     "python.defaultInterpreterPath": "python3",
     "python.languageServer": "Pylance",
     "python.linting.enabled": true,
@@ -56,6 +59,7 @@
     "python.formatting.blackArgs": ["--config=.devenv/config/pyproject.toml"],
     "python.analysis.autoImportCompletions": true,
     "autoDocstring.docstringFormat": "google",
+    "ruff.args": ["--config=.devenv/config/pyproject.toml"],
     // "[python]": {
     //     "editor.codeActionsOnSave": {
     //         "source.organizeImports": true
