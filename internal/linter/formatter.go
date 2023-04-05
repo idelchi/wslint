@@ -2,6 +2,7 @@ package linter
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 )
@@ -23,6 +24,8 @@ func (f *Writer) Write(line ...string) error {
 
 // Save applies the changes to the original file.
 func (f *Writer) Save() error {
+	log.Printf("Saving changes to %q (shadowed by %q)", f.Name, f.Shadow.Name)
+
 	return f.ReplaceWith(f.Shadow)
 }
 
@@ -103,6 +106,11 @@ func CreateShadow(name string) (shadow *Reader, err error) {
 	tmpFile, err := os.CreateTemp(filepath.Dir(name), filepath.Base(name)+"-replacement-*.txt")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temporary file: %w", err)
+	}
+
+	// Immediately close it, because we're opening it using another reference.
+	if err = tmpFile.Close(); err != nil {
+		return nil, fmt.Errorf("failed to close temporary file: %w", err)
 	}
 
 	if shadow, err = NewReader(tmpFile.Name()); err != nil {

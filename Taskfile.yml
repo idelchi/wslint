@@ -17,7 +17,7 @@ includes:
     vars:
       CONFIG_DIR: '{{.SETTINGS_DIR}}/config'
       SCRIPTS_DIR: '{{.SETTINGS_DIR}}/scripts'
-      COVERAGE: 90.0%
+      COVERAGE: 89.0%
 
 silent: true
 

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strings"
 )
@@ -68,6 +69,8 @@ func (f *Reader) Load(filename ...string) error {
 // Close closes the file.
 // Returns nil if the file is already closed.
 func (f *Reader) Close() error {
+	log.Printf("Closing file: %s", f.Name)
+
 	switch err := f.file.Close(); {
 	// If the file is already closed, suppress the error and return nil
 	case errors.Is(err, os.ErrClosed):
@@ -141,6 +144,8 @@ func (f *Reader) Rename(name string) error {
 // ReplaceWith replaces the current file with the given file.
 func (f *Reader) ReplaceWith(replacement *Reader) (err error) {
 	name := f.Name
+
+	log.Printf("Replacing %q with %q", name, replacement.Name)
 
 	// Close the original
 	if err = f.Close(); err != nil {
