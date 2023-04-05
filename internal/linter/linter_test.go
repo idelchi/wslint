@@ -1,8 +1,6 @@
 package linter_test
 
 import (
-	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -82,9 +80,7 @@ func TestLinter(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			file := filepath.Join(t.TempDir(), "test.txt")
-
-			CreateTempFile(t, file, strings.Join(tc.content, "\n"))
+			file := CreateTempFile(t, tc.content...)
 
 			lintFile := linter.NewLinter(file)
 
@@ -121,6 +117,8 @@ func TestLinter(t *testing.T) {
 
 // NewReaderFormatter creates a new reader and formatter for the given file.
 func NewReaderWriter(t *testing.T, file string) (*linter.Reader, *linter.Writer) {
+	t.Helper()
+
 	reader, err := linter.NewReader(file)
 	require.NoError(t, err)
 
@@ -142,9 +140,7 @@ func TestLinter_ErrorNoCheckersConfigured(t *testing.T) {
 	t.Parallel()
 
 	// Create the file
-	filePath := filepath.Join(t.TempDir(), "test.txt")
-	CreateTempFile(t, filePath, "This file ends with no whitespace.")
-	lintFile := linter.Linter{Name: filePath}
+	lintFile := linter.Linter{Name: CreateTempFile(t, "This file ends with no whitespace.")}
 
 	reader, writer := NewReaderWriter(t, lintFile.Name)
 

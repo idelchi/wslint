@@ -1,8 +1,8 @@
 package linter_test
 
 import (
+	"fmt"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -19,26 +19,20 @@ import (
 func TestFormatter(t *testing.T) {
 	t.Parallel()
 
-	// Create a file with some contents
-	filePath := filepath.Join(t.TempDir(), "test.txt")
-
 	content := []string{
 		"This is the original file.",
 		"It has some dummy content,",
 		"like this line.",
 	}
 
-	CreateTempFile(t, filePath, strings.Join(content, "\n"))
+	// Create a file and hand it to the Reader
+	file, err := linter.NewReader(CreateTempFile(t, content...))
 
-	// Create a file wrapper
-	file, err := linter.NewReader(filePath)
+	// No error should occur when opening
 	require.NoError(t, err)
 
-	// Create a shadow
-	require.NoError(t, err)
-
+	// Create a formatter to interact with the file
 	formatter, err := linter.NewWriter(file)
-
 	require.NoError(t, err)
 
 	contentReverse := []string{}
@@ -46,11 +40,18 @@ func TestFormatter(t *testing.T) {
 	// Read all lines into a slice
 	content = ReadAll(t, file)
 
-	// Copy in reverse order the content to the replacement file
+	require.NoError(t, formatter.Load())
+	require.NoError(t, formatter.Open())
+
+	// Write in reverse order the content to the file
 	for i := len(content) - 1; i >= 0; i-- {
 		contentReverse = append(contentReverse, content[i])
+		fmt.Println(content[i])
 		require.NoError(t, formatter.Write(content[i]))
 	}
+
+	// Close the files
+	require.NoError(t, formatter.Close())
 
 	// Now replace the original file with the replacement
 	require.NoError(t, formatter.Save())

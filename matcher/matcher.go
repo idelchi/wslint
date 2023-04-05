@@ -6,11 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
-
-	"golang.org/x/exp/slices"
-	"golang.org/x/tools/godoc/util"
-	"golang.org/x/tools/godoc/vfs"
 
 	"github.com/bmatcuk/doublestar/v4"
 )
@@ -80,45 +75,11 @@ func New(hidden bool, exclude []string, logger Logger) Globber {
 		matcher.Exclude = append(matcher.Exclude, "**/.*", "**/.*/**/*")
 	}
 
-	// isBinary returns true if the given file is detected as a binary file, false otherwise.
-	isBinary := func(file string) bool {
-		fs := vfs.OS(filepath.Dir(file))
-
-		return !util.IsTextFile(fs, filepath.Base(file))
-	}
-
 	matcher.extraExcludes = map[string]func(string) bool{
 		"detected as binary": isBinary,
 	}
 
 	return matcher
-}
-
-// isExcluded returns the exclude pattern that the given file matches, or an empty string if the
-// file does not match any exclude patterns.
-func (m *Globber) isExcluded(file string) (pattern string) {
-	for _, pattern := range m.Exclude {
-		if matched, _ := doublestar.Match(pattern, file); matched {
-			return pattern
-		}
-	}
-
-	return
-}
-
-// contains returns true if the given file is already present in the list of matched files, false otherwise.
-func (m *Globber) contains(file string) bool {
-	return slices.Contains(m.files, file)
-}
-
-// isExplicitlyIncluded returns true if the given file is considered to be explicitly included, which
-// means the full pattern and the filename do not contain any glob characters.
-func (m *Globber) isExplicitlyIncluded(file string) bool {
-	globsInPath := strings.Contains(file, "*")
-	globsInName := strings.Contains(filepath.Base(file), "*")
-	globsInExtension := strings.Contains(filepath.Ext(file), "*") || filepath.Ext(file) == ""
-
-	return !globsInPath || (globsInName && !globsInExtension)
 }
 
 // Match finds all files matching the given pattern and applies the exclusion options. After
@@ -140,14 +101,14 @@ outer:
 
 		switch {
 		// 1) Skip files that are already found
-		case m.contains(match):
+		case contains(match, m.files):
 			m.Logger.Printf("<skipped> %q <already in matches>", match)
 		// 2) If the file is explicitly included (i.e no glob pattern is used), then it should be included immediately.
-		case m.isExplicitlyIncluded(pattern):
+		case isExplicitlyIncluded(pattern):
 			m.Logger.Printf("<exception> %q <explicitly included>", match)
 			m.files = append(m.files, match)
-		case m.isExcluded(match) != "":
-			m.Logger.Printf("<skipped> %q <matches exclude pattern> %q", match, m.isExcluded(match))
+		case isExcluded(match, m.Exclude) != "":
+			m.Logger.Printf("<skipped> %q <matches exclude pattern> %q", match, isExcluded(match, m.Exclude))
 		default:
 			for name, fn := range m.extraExcludes {
 				if fn(match) {

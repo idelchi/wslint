@@ -12,3 +12,8 @@ linted
 wslint
 stretchr
 Unpatch
+nolint
+cyclop
+funlen
+gochecknoglobals
+paralleltest

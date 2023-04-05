@@ -9,16 +9,18 @@ import (
 	"strings"
 )
 
+// ReadWriteSeekerCloser is a combination of io.ReadWriteSeeker and io.Closer.
 type ReadWriteSeekerCloser interface {
 	io.ReadWriteSeeker
 	io.Closer
 }
 
+// ReadStringer is a simplified version of bufio.Reader.
 type ReadStringer interface {
 	ReadString(delim byte) (string, error)
 }
 
-// File represents a wrapped management of file handling, using os.File and bufio.Reader.
+// Reader represents a wrapped management of file handling.
 // Given a name, it can open, close and read lines from the file, until EOF.
 type Reader struct {
 	// Name is the name of the file to open. Should be a full or relative path.
@@ -51,6 +53,16 @@ func (f *Reader) Open() (err error) {
 	}
 
 	return f.Reset()
+}
+
+// Load opens the file. It allows for reusing the same file manager for a new file.
+// If no filename is provided, it equates to calling Open().
+func (f *Reader) Load(filename ...string) error {
+	if len(filename) > 0 {
+		f.Name = filename[0]
+	}
+
+	return f.Open()
 }
 
 // Close closes the file.
@@ -92,6 +104,7 @@ func (f *Reader) HasLines() bool {
 func (f *Reader) Reset() error {
 	f.buffer = bufio.NewReader(f.file)
 	f.done = false
+
 	if _, err := f.file.Seek(0, io.SeekStart); err != nil {
 		return fmt.Errorf("failed to reset file: %w", err)
 	}
@@ -110,6 +123,7 @@ func (f *Reader) Write(lines ...string) error {
 	return nil
 }
 
+// Rename renames the file to the given string.
 func (f *Reader) Rename(name string) error {
 	if err := f.Close(); err != nil {
 		return fmt.Errorf("failed to close file: %w", err)
@@ -139,12 +153,4 @@ func (f *Reader) ReplaceWith(replacement *Reader) (err error) {
 // Save simply closes the file, since all writes are done in place.
 func (f *Reader) Save() error {
 	return f.Close()
-}
-
-// Load opens the file.
-// Returns an error if the file doesn't exist.
-func (f *Reader) Load(name string) error {
-	f.Name = name
-
-	return f.Open()
 }
