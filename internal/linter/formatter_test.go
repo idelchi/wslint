@@ -1,7 +1,6 @@
 package linter_test
 
 import (
-	"fmt"
 	"path/filepath"
 	"testing"
 
@@ -46,7 +45,6 @@ func TestFormatter(t *testing.T) {
 	// Write in reverse order the content to the file
 	for i := len(content) - 1; i >= 0; i-- {
 		contentReverse = append(contentReverse, content[i])
-		fmt.Println(content[i])
 		require.NoError(t, formatter.Write(content[i]))
 	}
 
