@@ -49,7 +49,7 @@ func (f *Reader) Open() (err error) {
 	f.file, err = os.OpenFile(f.Name, os.O_RDWR, os.ModeAppend)
 
 	if err != nil || f.file == nil {
-		return fmt.Errorf("file manager failed to: %w", err)
+		return fmt.Errorf("opening reader: %w", err)
 	}
 
 	return f.Reset()
