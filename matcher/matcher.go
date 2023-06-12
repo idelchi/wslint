@@ -90,7 +90,7 @@ func (m *Globber) Match(pattern string) (err error) {
 	var matches []string
 
 	if matches, err = doublestar.FilepathGlob(pattern, doublestar.WithFilesOnly()); err != nil {
-		return fmt.Errorf("failed to match pattern %q: %w", pattern, err)
+		return fmt.Errorf("matching pattern %q: %w", pattern, err)
 	}
 
 outer:

@@ -6,8 +6,7 @@ jobs:
     runs-on: ubuntu-22.04
     container: idelchi/devenv:latest
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
           fetch-depth: 0
@@ -18,8 +17,7 @@ jobs:
     runs-on: ubuntu-22.04
     container: idelchi/devenv:latest
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
           fetch-depth: 0
@@ -30,8 +28,7 @@ jobs:
     runs-on: ubuntu-22.04
     container: idelchi/devenv:latest
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
           fetch-depth: 0
@@ -42,8 +39,7 @@ jobs:
     runs-on: ubuntu-22.04
     container: idelchi/devenv:latest
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
           fetch-depth: 0

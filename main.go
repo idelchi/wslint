@@ -46,6 +46,7 @@ type Options struct {
 }
 
 func main() {
+	// Flags for the CLI
 	var (
 		fix      = flag.Bool("w", false, "format file in-place")
 		verbose  = flag.Bool("d", false, "debug output")
@@ -62,15 +63,14 @@ func main() {
 	flag.Usage = usage
 	flag.Parse()
 
-	// Rewrite if-statements below to a switch statement
 	switch {
-	// If the -v flag is set, print the version and exit
+	// If the version flag is set, print the version and exit
 	case *version:
 		exit(0, versionStamp)
-	// If no arguments are given, give an error message
+	// If no arguments are given, raise an error message
 	case flag.NArg() == 0:
 		exit(1, "Error: Need to provide at least one path element")
-	// If the number of parallel jobs is less than 1, give an error message
+	// If the number of parallel jobs is less than 1, raise an error message
 	case *parallel <= 0:
 		exit(1, "Error: Number of parallel jobs must be greater than 0")
 	}
@@ -78,7 +78,7 @@ func main() {
 	// Create a logger for debug messages
 	verboseLog := log.New(os.Stdout, "", 0)
 	if !*verbose {
-		// If the -d flag is not set, disable debug messages
+		// Disable debug messages if the verbose flag is not set
 		verboseLog.SetOutput(io.Discard)
 	}
 

@@ -14,7 +14,8 @@ A file formatter that eliminates trailing whitespaces and ensures there is exact
 
 ## Overview
 
-wslint is designed to help keep your codebase clean and consistent by removing unnecessary whitespaces and enforcing a single blank line at the end of each file.
+wslint is designed to help keep your codebase clean and consistent by removing unnecessary whitespaces
+and enforcing a single blank line at the end of each file.
 
 ## Installation
 
@@ -64,7 +65,8 @@ Run wslint on the `my_project` directory with four parallel jobs:
 
 ## Default Exclusion Patterns
 
-By default, wslint excludes the following patterns. These patterns represent common files or folders that are either binary, temporary, or irrelevant to code formatting:
+By default, wslint excludes the following patterns. These patterns represent common files or folders that
+are either binary, temporary, or irrelevant to code formatting:
 
 - `**/*.exe`
 - `**/.git/**`
