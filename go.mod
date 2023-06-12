@@ -5,9 +5,9 @@ go 1.20
 require (
 	bou.ke/monkey v1.0.2
 	github.com/bmatcuk/doublestar/v4 v4.6.0
-	github.com/stretchr/testify v1.8.2
-	golang.org/x/exp v0.0.0-20230224173230-c95f2b4c22f2
-	golang.org/x/tools v0.6.0
+	github.com/stretchr/testify v1.8.4
+	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
+	golang.org/x/tools v0.9.3
 )
 
 require (
