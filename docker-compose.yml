@@ -15,7 +15,7 @@ services:
       - '10000-10200:10000-10200' # Go Profilers
       - '9090:6419' # grip
     network_mode: bridge
-    user: root
+    user: user
     volumes:
       - .:/home/user/ws
     extra_hosts:
