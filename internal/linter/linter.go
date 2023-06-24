@@ -10,7 +10,7 @@ import (
 	"github.com/idelchi/wslint/internal/checkers"
 )
 
-// Checker represents a line analyzer.
+// Checker represents a line analyser.
 type Checker interface {
 	Analyze(string, int)
 	Finalize()

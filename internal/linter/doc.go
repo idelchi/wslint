@@ -5,3 +5,7 @@
 //     another. The intention is that the replacer is used by in-place formatters.
 //   - Linter, which wraps a Manager and a list of checkers and provides a simple interface for linting and fixing
 package linter
+
+// TODO(Idelchi): file and formatter could be available as packages (i.e move out of 'internal')
+// TODO(Idelchi): abstract linter behaviour (i.e the checker could be a command to run on the file, and not always line
+// by line (?))
