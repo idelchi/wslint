@@ -1,22 +1,27 @@
 version: '3'
 
 vars:
-  SETTINGS_DIR: .devenv
+  DEVENV: .devenv
+
+dotenv: ['.env']
 
 includes:
-  common:
-    taskfile: '{{.SETTINGS_DIR}}/Taskfile.yml'
-    vars:
-      CONFIG_DIR: '{{.SETTINGS_DIR}}/config'
-      SCRIPTS_DIR: '{{.SETTINGS_DIR}}/scripts'
-    aliases:
-      - ci
-
+  aux:
+    taskfile: '{{.DEVENV}}/taskfiles/Taskfile.aux.yml'
+    dir: '{{.USER_WORKING_DIR}}'
+  git:
+    taskfile: '{{.DEVENV}}/taskfiles/Taskfile.git.yml'
+    dir: '{{.USER_WORKING_DIR}}'
+  lint:
+    taskfile: '{{.DEVENV}}/taskfiles/Taskfile.lint.yml'
+    dir: '{{.USER_WORKING_DIR}}'
+  format:
+    taskfile: '{{.DEVENV}}/taskfiles/Taskfile.format.yml'
+    dir: '{{.USER_WORKING_DIR}}'
   go:
-    taskfile: '{{.SETTINGS_DIR}}/taskfiles/Taskfile.go.yml'
+    taskfile: '{{.DEVENV}}/taskfiles/Taskfile.go.yml'
+    dir: '{{.USER_WORKING_DIR}}'
     vars:
-      CONFIG_DIR: '{{.SETTINGS_DIR}}/config'
-      SCRIPTS_DIR: '{{.SETTINGS_DIR}}/scripts'
       COVERAGE: 89.0%
 
 silent: true
@@ -24,20 +29,43 @@ silent: true
 output: prefixed
 
 tasks:
+  docker:
+    desc: Run commands inside the Docker container
+    summary: |
+      This task allows you to run commands inside the Docker container.
+      Usage:
+        - `task docker` to launch the container and enter its shell
+        - `task docker -- task <task> -f` to run a task/command inside the container
+    cmds:
+      - docker rm -f devenv > /dev/null 2>&1 || true
+      - docker compose run --build --name devenv --rm --service-ports devenv {{.CLI_ARGS}}
+    interactive: true
+
+  push:
+    desc: Push changes to the remote repository
+    summary: |
+      This task pushes changes to the remote repository.
+      Usage:
+        - `task push` for a default commit message
+        - `task push -- "My commit message"` for a custom commit message
+    cmds:
+      - task: git
+      - task: git:push
+
   clean:
-    - task: common:aux:clean
+    - task: aux:clean
     - task: go:clean
 
   info:
-    - task: common:git
+    - task: git
 
-  format:
-    - task: common:format
+  formatting:
+    - task: format
     - task: go:format
 
-  lint:
+  linting:
     deps:
-      - common:lint
+      - lint
       - go:lint
 
   build:
@@ -46,9 +74,6 @@ tasks:
 
   test:
     - task: go:quality
-
-  docker:
-    - task: common:docker
 
   all:
     desc: run all available tasks
@@ -67,8 +92,5 @@ tasks:
       - task: format
       - task: lint
 
-  push:
-    - task: common:push
-
   update:
-    - task: common:git:update
+    - task: git:update
