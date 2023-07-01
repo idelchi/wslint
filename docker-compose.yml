@@ -18,9 +18,7 @@ services:
     user: user
     volumes:
       - .:/home/user/ws
-    #   - ${DEVENV}:${DEVENV} # Possible to mount it inside
-    # environment:
-    #   - DEVENV=${DEVENV} # Inherit the environment
+      - ${DEVENV}:/home/user # Possible to mount it inside
     extra_hosts:
       - host:host-gateway
     working_dir: /home/user/ws

@@ -6,7 +6,7 @@ require (
 	bou.ke/monkey v1.0.2
 	github.com/bmatcuk/doublestar/v4 v4.6.0
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
+	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df
 	golang.org/x/tools v0.10.0
 )
 
