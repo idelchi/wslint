@@ -45,6 +45,7 @@ type Options struct {
 	Hidden          bool
 }
 
+//nolint:funlen // This function is long, but it's not complex.
 func main() {
 	// Flags for the CLI
 	var (
@@ -54,6 +55,7 @@ func main() {
 		hidden   = flag.Bool("a", false, "show hidden files & folders")
 		parallel = flag.Int("j", runtime.NumCPU(), "number of parallel jobs, defaults to number of CPUs")
 		version  = flag.Bool("v", false, "print version")
+		quiet    = flag.Bool("q", false, "suppress messages")
 	)
 
 	// No time stamp in the log output
@@ -78,7 +80,13 @@ func main() {
 	// Create a logger for debug messages
 	verboseLog := log.New(os.Stdout, "", 0)
 	if !*verbose {
-		// Disable debug messages if the verbose flag is not set
+		// Disable debug messages if the verbose flag is not set,
+		verboseLog.SetOutput(io.Discard)
+	}
+
+	// Disable the logger if the quiet flag is set
+	if *quiet {
+		log.SetOutput(io.Discard)
 		verboseLog.SetOutput(io.Discard)
 	}
 

@@ -1,0 +1,15 @@
+{
+    "name": "Docker in Docker",
+    "containerUser": "user",
+    "remoteUser": "user",
+    "image": "idelchi/devenv:dev",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "github.copilot",
+                "moshfeu.compare-folders",
+                "task.vscode-task"
+            ]
+        }
+    }
+}
