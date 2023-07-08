@@ -18,5 +18,6 @@ The flags are:
 	-h		Print help information.
 	-v		Print the version number.
 	-d		Show debug output.
+	-q		Suppress messages.
 */
 package main

@@ -62,6 +62,7 @@ Run wslint on the `my_project` directory with four parallel jobs:
 | `-h` | Print help information.                                            |
 | `-v` | Print the version number.                                          |
 | `-d` | Show debug output.                                                 |
+| `-q` | Suppress messages.                                                 |
 
 ## Default Exclusion Patterns
 
