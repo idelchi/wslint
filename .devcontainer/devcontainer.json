@@ -1,5 +1,5 @@
 {
-    "name": "Docker in Docker",
+    "name": "devenv",
     "containerUser": "user",
     "remoteUser": "user",
     "image": "idelchi/devenv:dev",

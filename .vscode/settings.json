@@ -85,16 +85,41 @@
         "editor.insertSpaces": true
     },
     /* ****** ****** ****** */
-    /* ****** CONSOLE ****** */
-    "terminal.integrated.env.windows": {
-        "PWD": "${workspaceFolder}"
-    },
-    "terminal.integrated.defaultProfile.windows": "PowerShell",
-    /* ****** ****** ****** */
     /* ****** TODOs ****** */
     "todo-tree.filtering.includeHiddenFiles": true,
     "todo-tree.highlights.defaultHighlight": {
         "type": "text"
-    }
+    },
     /* ****** ****** ****** */
+    /* ****** CONSOLE ****** */
+    "terminal.integrated.env.windows": {
+        "PWD": "${workspaceFolder}",
+        "DEVENV": "."
+    },
+    "terminal.integrated.env.linux": {
+        "PWD": "${workspaceFolder}",
+        "DEVENV": "."
+    },
+    "terminal.integrated.enableMultiLinePasteWarning": false,
+    /* ****** ****** ****** */
+    /* ****** SYSTEM ****** */
+    "files.eol": "\n",
+    /* ****** ****** ****** */
+    /* ****** COPILOT ****** */
+    "editor.inlineSuggest.enabled": true,
+    "github.copilot.enable": {
+        "*": true,
+        "plaintext": true,
+        "markdown": true,
+        "yaml": true,
+        "python": true,
+        "go": true,
+        "rust": true,
+        "groovy": true,
+        "dockerfile": true,
+        "dockercompose": true,
+        "json": true,
+        "jsonc": true,
+        "csharp": true
+    }
 }
