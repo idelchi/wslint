@@ -2,5 +2,5 @@ name: wslint
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  call-workflow:
+  verify:
     uses: idelchi/devenv/.github/workflows/devenv-actions.yml@dev
