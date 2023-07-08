@@ -11,5 +11,6 @@
                 "task.vscode-task"
             ]
         }
-    }
+    },
+    "postCreateCommand": "git submodule update --recursive --init"
 }
