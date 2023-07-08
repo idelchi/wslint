@@ -7,7 +7,7 @@ require (
 	github.com/bmatcuk/doublestar/v4 v4.6.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df
-	golang.org/x/tools v0.10.0
+	golang.org/x/tools v0.11.0
 )
 
 require (
