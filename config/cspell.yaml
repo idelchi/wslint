@@ -1,0 +1,6 @@
+dictionaries:
+  - wslint-words
+
+dictionaryDefinitions:
+  - name: wslint-words
+    path: config/project-words

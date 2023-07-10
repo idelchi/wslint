@@ -5,6 +5,9 @@ vars:
 
 dotenv: ['.env']
 
+env:
+  CSPELL_CONFIG: ./config/cspell.yaml
+
 includes:
   aux: '{{.DEVENV}}/taskfiles/Taskfile.aux.yml'
   git: '{{.DEVENV}}/taskfiles/Taskfile.git.yml'
