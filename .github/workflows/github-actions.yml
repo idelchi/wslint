@@ -4,3 +4,5 @@ on: [push, pull_request, workflow_dispatch]
 jobs:
   verify:
     uses: idelchi/devenv/.github/workflows/devenv-actions.yml@dev
+    with:
+      image: 'idelchi/devenv:dev'
