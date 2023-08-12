@@ -4,8 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
-
-	"golang.org/x/exp/slices"
+	"slices"
 
 	"github.com/idelchi/wslint/internal/checkers"
 )

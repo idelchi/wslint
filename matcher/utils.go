@@ -2,9 +2,9 @@ package matcher
 
 import (
 	"path/filepath"
+	"slices"
 	"strings"
 
-	"golang.org/x/exp/slices"
 	"golang.org/x/tools/godoc/util"
 	"golang.org/x/tools/godoc/vfs"
 
