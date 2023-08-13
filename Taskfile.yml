@@ -57,13 +57,13 @@ tasks:
   info:
     - task: git
 
-  formatting:
-    - task: format
+  format:
+    - task: format:default
     - task: go:format
 
-  linting:
+  lint:
     deps:
-      - lint
+      - lint:default
       - go:lint
 
   build:
