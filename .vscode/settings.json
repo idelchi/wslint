@@ -43,29 +43,23 @@
     "prettier.configPath": ".devenv/config/.prettierrc.yml",
     /* ****** ****** ****** */
     /* ****** PYTHON ****** */
-    "[python]": {
-        "editor.formatOnType": true
-    },
     "python.defaultInterpreterPath": "python3",
     "python.languageServer": "Pylance",
-    "python.linting.enabled": true,
-    "python.linting.lintOnSave": true,
-    "python.linting.maxNumberOfProblems": 1000,
-    "python.linting.prospectorEnabled": true,
-    "python.linting.prospectorArgs": [
-        "--profile=.devenv/config/.prospector.yml"
-    ],
-    "python.formatting.provider": "black",
-    "python.formatting.blackArgs": ["--config=.devenv/config/pyproject.toml"],
     "python.analysis.autoImportCompletions": true,
     "autoDocstring.docstringFormat": "google",
+    "black-formatter.args": ["--config", ".devenv/config/pyproject.toml"],
+    "isort.args": ["--settings-file", ".devenv/config/pyproject.toml"],
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        }
+    },
+    "pylint.args": ["--rcfile=.devenv/config/pyproject.toml"],
+    "mypy-type-checker.args": ["--config=.devenv/config/pyproject.toml"],
     "ruff.args": ["--config=.devenv/config/pyproject.toml"],
-    // "[python]": {
-    //     "editor.codeActionsOnSave": {
-    //         "source.organizeImports": true
-    //     }
-    // },
-    // "isort.args":["--settings-file=.devenv/config/pyproject.toml"],
+    "ruff.run": "onSave",
     /* ****** ****** ****** */
     /* ****** GO ****** */
     "go.lintOnSave": "workspace",
@@ -85,16 +79,43 @@
         "editor.insertSpaces": true
     },
     /* ****** ****** ****** */
-    /* ****** CONSOLE ****** */
-    "terminal.integrated.env.windows": {
-        "PWD": "${workspaceFolder}"
-    },
-    "terminal.integrated.defaultProfile.windows": "PowerShell",
-    /* ****** ****** ****** */
     /* ****** TODOs ****** */
     "todo-tree.filtering.includeHiddenFiles": true,
     "todo-tree.highlights.defaultHighlight": {
         "type": "text"
-    }
+    },
     /* ****** ****** ****** */
+    /* ****** CONSOLE ****** */
+    "terminal.integrated.env.windows": {
+        "PWD": "${workspaceFolder}",
+        "DEVENV": ".devenv"
+    },
+    "terminal.integrated.env.linux": {
+        "PWD": "${workspaceFolder}",
+        "DEVENV": ".devenv"
+    },
+    "terminal.integrated.enableMultiLinePasteWarning": false,
+    /* ****** ****** ****** */
+    /* ****** SYSTEM ****** */
+    "files.eol": "\n",
+    /* ****** ****** ****** */
+    /* ****** COPILOT ****** */
+    "editor.inlineSuggest.enabled": true,
+    "github.copilot.enable": {
+        "*": true,
+        "plaintext": true,
+        "markdown": true,
+        "yaml": true,
+        "python": true,
+        "go": true,
+        "rust": true,
+        "groovy": true,
+        "dockerfile": true,
+        "dockercompose": true,
+        "json": true,
+        "jsonc": true,
+        "csharp": true
+    }
 }
+// Note that environment variables might not work in config path
+// TODO: https://code.visualstudio.com/docs/editor/intellisense

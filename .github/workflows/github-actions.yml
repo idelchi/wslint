@@ -2,45 +2,7 @@ name: wslint
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  info:
-    runs-on: ubuntu-22.04
-    container: idelchi/devenv:latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          fetch-depth: 0
-      - run: task info
-
-  lint:
-    needs: info
-    runs-on: ubuntu-22.04
-    container: idelchi/devenv:latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          fetch-depth: 0
-      - run: task lint go:lint
-
-  test:
-    needs: info
-    runs-on: ubuntu-22.04
-    container: idelchi/devenv:latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          fetch-depth: 0
-      - run: task test
-
-  build:
-    needs: info
-    runs-on: ubuntu-22.04
-    container: idelchi/devenv:latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          fetch-depth: 0
-      - run: task build
+  verify:
+    uses: idelchi/devenv/.github/workflows/devenv-actions.yml@dev
+    with:
+      image: 'idelchi/devenv:dev'

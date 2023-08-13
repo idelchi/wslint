@@ -1,9 +1,16 @@
 version: '3'
 
-vars:
-  DEVENV: .devenv
-
+# .env file variables are available here, with the exception of `includes`,
+# where externally defined environment variables and regular variables are available.
+# It's therefore recommended to also source the .env file before running.
 dotenv: ['.env']
+
+vars:
+  # This environment variable must exist (i.e it's not enough that it's set in the .env file)
+  DEVENV: $DEVENV
+
+env:
+  CSPELL_CONFIG: ./config/cspell.yaml
 
 includes:
   aux: '{{.DEVENV}}/taskfiles/Taskfile.aux.yml'
@@ -29,7 +36,7 @@ tasks:
         - `task docker -- task <task> -f` to run a task/command inside the container
     cmds:
       - docker rm -f devenv > /dev/null 2>&1 || true
-      - docker compose run --build --name devenv --rm --service-ports devenv {{.CLI_ARGS}}
+      - docker compose -f {{.DEVENV}}/docker-compose.yml run --name devenv --rm --service-ports devenv {{.CLI_ARGS}}
     interactive: true
 
   push:
