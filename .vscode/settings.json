@@ -88,11 +88,11 @@
     /* ****** CONSOLE ****** */
     "terminal.integrated.env.windows": {
         "PWD": "${workspaceFolder}",
-        "DEVENV": "."
+        "DEVENV": ".devenv"
     },
     "terminal.integrated.env.linux": {
         "PWD": "${workspaceFolder}",
-        "DEVENV": "."
+        "DEVENV": ".devenv"
     },
     "terminal.integrated.enableMultiLinePasteWarning": false,
     /* ****** ****** ****** */
