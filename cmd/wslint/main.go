@@ -59,7 +59,7 @@ func main() {
 	}
 
 	// Create the options
-	options := Options{
+	options := LinterOptions{
 		Exclude:         excludes,
 		NumberOfWorkers: cli.parallel,
 		Fix:             cli.fix,

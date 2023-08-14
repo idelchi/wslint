@@ -8,7 +8,7 @@ import (
 	"github.com/idelchi/wslint/matcher"
 )
 
-func match(options Options) int {
+func match(options LinterOptions) int {
 	verboseLog := options.Logger
 	patterns := options.Patterns
 	hidden := options.Hidden
