@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/idelchi/wslint/internal/linter"
+	"github.com/idelchi/wslint/internal/worker"
 )
 
 func process(options Options, files []linter.Linter) int {
@@ -14,7 +15,7 @@ func process(options Options, files []linter.Linter) int {
 		options.NumberOfWorkers = numberOfFiles
 	}
 
-	workerPool := WorkerPool{
+	workerPool := worker.Pool{
 		NumberOfWorkers: options.NumberOfWorkers,
 		NumberOfJobs:    numberOfFiles,
 		Fix:             options.Fix,
