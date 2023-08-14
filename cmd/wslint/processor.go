@@ -7,7 +7,7 @@ import (
 	"github.com/idelchi/wslint/internal/worker"
 )
 
-func process(options Options, files []linter.Linter) int {
+func process(options LinterOptions, files []linter.Linter) int {
 	numberOfFiles := len(files)
 	options.Logger.Printf("Processing %d files", numberOfFiles)
 

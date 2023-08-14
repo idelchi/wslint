@@ -18,18 +18,6 @@ type LinterOptions struct {
 	Verbose         bool
 }
 
-// Options contains the options for the linter.
-type Options struct {
-	Exclude         []string
-	NumberOfWorkers int
-	Fix             bool
-	Logger          *log.Logger
-	Patterns        []string
-	Hidden          bool
-	Quiet           bool
-	Verbose         bool
-}
-
 // CLIOptions contains the configuration parsed from the CLI.
 type CLIOptions struct {
 	fix      bool
