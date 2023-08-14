@@ -26,11 +26,7 @@ The first thing you'll need to do is get our code onto your machine.
 1. Fork this repository by clicking the "Fork" button on the top right.
 2. Clone your fork locally:
 
-   git clone <https://github.com/idelchi/wslint.git>
-
-3. Navigate to the project directory:
-
-   cd wslint
+   git clone <https://github.com/your-org/wslint.git>
 
 ## Make a Pull Request
 
@@ -40,16 +36,10 @@ Before you submit your Pull Request (PR) consider the following guidelines:
 
 - Search [GitHub](https://github.com/idelchi/wslint/pulls) for an open or closed PR that relates to your submission.
   You don't want to duplicate effort.
-- Make your changes in a new git branch:
-
-        git checkout -b my-fix-branch master
-
+- Make your changes in a new git branch
 - Create your patch, **including appropriate test cases**.
 - Commit your changes using a descriptive commit message.
-- Push your branch to GitHub:
-
-        git push origin my-fix-branch
-
+- Push your branch to GitHub
 - In GitHub, send a pull request to `wslint:master`.
 
 ## Keeping your Pull Request updated
