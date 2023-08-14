@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"runtime"
 	"strings"
 )
 
@@ -29,53 +28,27 @@ func exit(code int, msg string) {
 	os.Exit(code)
 }
 
-//nolint:funlen // This function is long, but it's not complex.
 func main() {
-	// Flags for the CLI
-	var (
-		fix      = flag.Bool("w", false, "format file in-place")
-		verbose  = flag.Bool("d", false, "debug output")
-		exclude  = flag.String("e", "", "exclude pattern, comma separated")
-		hidden   = flag.Bool("a", false, "show hidden files & folders")
-		parallel = flag.Int("j", runtime.NumCPU(), "number of parallel jobs, defaults to number of CPUs")
-		version  = flag.Bool("v", false, "print version")
-		quiet    = flag.Bool("q", false, "suppress messages")
-	)
-
 	// No time stamp in the log output
 	log.SetFlags(0)
 
-	// Set the usage message & parse the flags
-	flag.Usage = usage
-	flag.Parse()
-
-	switch {
-	// If the version flag is set, print the version and exit
-	case *version:
-		exit(0, versionStamp)
-	// If no arguments are given, raise an error message
-	case flag.NArg() == 0:
-		exit(1, "Error: Need to provide at least one path element")
-	// If the number of parallel jobs is less than 1, raise an error message
-	case *parallel <= 0:
-		exit(1, "Error: Number of parallel jobs must be greater than 0")
-	}
+	cli := parse()
 
 	// Create a logger for debug messages
 	verboseLog := log.New(os.Stdout, "", 0)
-	if !*verbose {
+	if !cli.verbose {
 		// Disable debug messages if the verbose flag is not set,
 		verboseLog.SetOutput(io.Discard)
 	}
 
 	// Disable the logger if the quiet flag is set
-	if *quiet {
+	if cli.quiet {
 		log.SetOutput(io.Discard)
 		verboseLog.SetOutput(io.Discard)
 	}
 
 	// Split the exclude patterns into a slice
-	excludes := strings.Split(*exclude, ",")
+	excludes := strings.Split(cli.exclude, ",")
 
 	for i, exclude := range excludes {
 		// Remove any leading and trailing whitespace
@@ -88,11 +61,11 @@ func main() {
 	// Create the options
 	options := Options{
 		Exclude:         excludes,
-		NumberOfWorkers: *parallel,
-		Fix:             *fix,
+		NumberOfWorkers: cli.parallel,
+		Fix:             cli.fix,
 		Logger:          verboseLog,
-		Patterns:        flag.Args(),
-		Hidden:          *hidden,
+		Patterns:        cli.patterns,
+		Hidden:          cli.hidden,
 	}
 
 	os.Exit(match(options))
