@@ -54,8 +54,8 @@ func (l *Linter) InsertChecker(c Checker) {
 	l.Checkers = append(l.Checkers, c)
 }
 
-// NewLinter creates a new linter, with the default checkers.
-func NewLinter(name string) *Linter {
+// New creates a new linter, with the default checkers.
+func New(name string) *Linter {
 	defaultCheckers := []Checker{
 		&checkers.Whitespace{},
 		&checkers.Blanks{},
@@ -136,6 +136,7 @@ func (l *Linter) HasIssues() bool {
 //
 //nolint:cyclop,funlen
 func (l *Linter) Fix(file Writeable) (err error) {
+	// TODO(Idelchi): What will happen if Lint() has not been called?
 	if !l.HasCheckers() {
 		return ErrNoCheckers
 	}

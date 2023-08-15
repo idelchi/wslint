@@ -4,6 +4,7 @@ import (
 	"log"
 	"path/filepath"
 
+	"github.com/idelchi/wslint/internal/checkers"
 	"github.com/idelchi/wslint/internal/linter"
 	"github.com/idelchi/wslint/internal/worker"
 	"github.com/idelchi/wslint/matcher"
@@ -11,9 +12,8 @@ import (
 
 // Wslint acts as a wrapper for the main functionality.
 type Wslint struct {
-	options  Options
-	files    []linter.Linter
-	checkers []linter.Checker
+	options Options
+	files   []linter.Linter
 }
 
 // Match stores the files that match the patterns.
@@ -42,9 +42,10 @@ func (w *Wslint) Match() {
 			file = fileRel
 		}
 
-		lint := &linter.Linter{
-			Name:     file,
-			Checkers: w.checkers,
+		// TODO(Idelchi) Set up a factory function for this
+		lint := linter.New(file)
+		if w.options.Exp {
+			lint.InsertChecker(&checkers.Stutters{})
 		}
 
 		// Append the linter to the slice

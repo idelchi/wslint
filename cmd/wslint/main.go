@@ -8,8 +8,6 @@ import (
 	"syscall"
 
 	"github.com/fatih/color"
-	"github.com/idelchi/wslint/internal/checkers"
-	"github.com/idelchi/wslint/internal/linter"
 )
 
 //nolint:gochecknoglobals // Global variable for CI stamping.
@@ -38,16 +36,9 @@ func main() {
 
 	wslint.Parse()
 
-	// Configure the checkers
-	wslint.checkers = []linter.Checker{
-		&checkers.Whitespace{},
-		&checkers.Blanks{},
-	}
-
 	if wslint.options.Exp {
-		wslint.checkers = append(wslint.checkers, &checkers.Stutters{})
 		if wslint.options.Fix {
-			log.Println(color.YellowString("Fixing stutters is an experimental feature and may not work as expected"))
+			log.Println(color.YellowString("Experimental feature may not work as expected"))
 			log.Println(color.YellowString("Press [enter] to continue or [ctrl+c] to abort"))
 
 			sigCh := make(chan os.Signal, 1)
