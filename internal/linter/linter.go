@@ -18,6 +18,7 @@ type Checker interface {
 	Results() ([]int, error)
 	Fix(string) string
 	Stop() int
+	Info() []string
 }
 
 // Writeable describes a file that can be written to.
@@ -110,12 +111,14 @@ func (l *Linter) Lint(file Readable) (err error) {
 var ErrNoCheckers = errors.New("no checkers configured")
 
 // GetIssues returns a list of rows with issues and a list of errors.
-func (l *Linter) GetIssues() (rows [][]int, errs []error) {
+func (l *Linter) GetIssues() (rows [][]int, errs []error, infos [][]string) {
 	for _, c := range l.Checkers {
 		row, err := c.Results()
+		info := c.Info()
 		if err != nil {
 			rows = append(rows, row)
 			errs = append(errs, err)
+			infos = append(infos, info)
 		}
 	}
 
@@ -124,12 +127,12 @@ func (l *Linter) GetIssues() (rows [][]int, errs []error) {
 
 // HasIssues takes a list of errors and returns false if all errors are nil.
 func (l *Linter) HasIssues() bool {
-	_, errors := l.GetIssues()
+	_, errors, _ := l.GetIssues()
 
 	return len(errors) > 0
 }
 
-// Fix fixes the file by removing trailing whitespaces and blank lines.
+// Fix fixes the file by removing issues as defined in the added checkers.
 //
 //nolint:cyclop,funlen
 func (l *Linter) Fix(file Writeable) (err error) {
@@ -160,7 +163,7 @@ func (l *Linter) Fix(file Writeable) (err error) {
 	// Fetch the last stop row
 	stop := stops[len(stops)-1]
 
-	// // Write the fixed file to the temporary file
+	// Write the fixed file to the temporary file
 	for row := 1; file.HasLines(); row++ {
 		if row == stop {
 			break
@@ -173,7 +176,7 @@ func (l *Linter) Fix(file Writeable) (err error) {
 			return fmt.Errorf("error getting next line: %w", err)
 		}
 
-		// If a line contains trailing whitespace, remove it
+		// If a line contains an issue, remove it.
 		// Not super efficient, but simpler. It becomes only a problem if the number of rows are huge.
 		for _, c := range l.Checkers {
 			rows, err := c.Results()
@@ -205,7 +208,7 @@ func (l *Linter) Fix(file Writeable) (err error) {
 
 // Summary prints a summary of the file.
 func (l *Linter) Summary() (ok bool) {
-	// Use colored output for emphasis
+	// Use coloured output for emphasis
 	filename := color.New(color.FgGreen, color.Bold).SprintFunc()
 	errorColor := color.New(color.FgRed).SprintFunc()
 	fixedMessage := color.New(color.FgYellow).SprintFunc()
@@ -223,10 +226,16 @@ func (l *Linter) Summary() (ok bool) {
 	if !ok {
 		log.Println(filename(l.Name))
 
-		rows, err := l.GetIssues()
+		rows, err, info := l.GetIssues()
 
 		for i := range err {
 			log.Printf("  - %s: at row(s): %v", errorColor(err[i]), rows[i])
+
+			if info := info[i]; info != nil {
+				for _, info := range info {
+					log.Printf("    	%s", errorColor(info))
+				}
+			}
 		}
 	}
 

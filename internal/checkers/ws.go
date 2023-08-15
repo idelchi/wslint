@@ -45,3 +45,8 @@ func (w *Whitespace) Stop() int {
 func (w *Whitespace) Fix(line string) string {
 	return trailing.Trim(line)
 }
+
+// Info returns extra information.
+func (w *Whitespace) Info() []string {
+	return nil
+}

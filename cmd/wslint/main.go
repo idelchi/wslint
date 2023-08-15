@@ -2,11 +2,13 @@ package main
 
 import (
 	"flag"
-	"io"
 	"log"
 	"os"
-	"strings"
+	"os/signal"
+	"syscall"
 
+	"github.com/fatih/color"
+	"github.com/idelchi/wslint/internal/checkers"
 	"github.com/idelchi/wslint/internal/linter"
 )
 
@@ -31,46 +33,43 @@ func exit(code int, msg string) {
 }
 
 func main() {
-	// No time stamp in the log output
-	log.SetFlags(0)
-
-	cli := parse()
-
-	// Create a logger for debug messages
-	verboseLog := log.New(os.Stdout, "", 0)
-	if !cli.verbose {
-		// Disable debug messages if the verbose flag is not set,
-		verboseLog.SetOutput(io.Discard)
-	}
-
-	// Disable the logger if the quiet flag is set
-	if cli.quiet {
-		log.SetOutput(io.Discard)
-		verboseLog.SetOutput(io.Discard)
-	}
-
-	// Split the exclude patterns into a slice
-	excludes := strings.Split(cli.exclude, ",")
-
-	for i, exclude := range excludes {
-		// Remove any leading and trailing whitespace
-		exclude = strings.TrimSpace(exclude)
-		// Remove "./" from the beginning of the pattern, if it exists
-		exclude = strings.TrimPrefix(exclude, "./")
-		excludes[i] = exclude
-	}
-
 	// Create the Wslint instance
+	wslint := Wslint{}
 
-	wslint := Wslint{
-		options: LinterOptions{
-			Exclude:         excludes,
-			NumberOfWorkers: cli.parallel,
-			Fix:             cli.fix,
-			Logger:          verboseLog,
-			Patterns:        cli.patterns,
-			Hidden:          cli.hidden,
-		},
+	wslint.Parse()
+
+	// Configure the checkers
+	wslint.checkers = []linter.Checker{
+		&checkers.Whitespace{},
+		&checkers.Blanks{},
+	}
+
+	if wslint.options.Exp {
+		wslint.checkers = append(wslint.checkers, &checkers.Stutters{})
+		if wslint.options.Fix {
+			log.Println(color.YellowString("Fixing stutters is an experimental feature and may not work as expected"))
+			log.Println(color.YellowString("Press [enter] to continue or [ctrl+c] to abort"))
+
+			sigCh := make(chan os.Signal, 1)
+			enterCh := make(chan struct{})
+
+			// Register to receive SIGINT (Ctrl+C) signals
+			signal.Notify(sigCh, syscall.SIGINT)
+
+			// Goroutine to detect the Enter key
+			go func() {
+				_, _ = os.Stdin.Read([]byte{0})
+				enterCh <- struct{}{}
+			}()
+
+			select {
+			case <-sigCh:
+				log.Println("Ctrl+C was pressed. Aborting...")
+				os.Exit(0)
+			case <-enterCh:
+				log.Println("Enter was pressed. Continuing...")
+			}
+		}
 	}
 
 	if wslint.Match(); len(wslint.files) == 0 {
@@ -78,20 +77,4 @@ func main() {
 	}
 
 	os.Exit(wslint.Process())
-}
-
-// Wslint acts as a wrapper for the main functionality.
-type Wslint struct {
-	options LinterOptions
-	files   []linter.Linter
-}
-
-// Match stores the files that match the patterns.
-func (w *Wslint) Match() {
-	w.files = match(w.options)
-}
-
-// Process processes the files, prints out the results and returns the exit code.
-func (w *Wslint) Process() int {
-	return process(w.options, w.files)
 }

@@ -2,12 +2,15 @@ package main
 
 import (
 	"flag"
+	"io"
 	"log"
+	"os"
 	"runtime"
+	"strings"
 )
 
-// LinterOptions contains the options for the linter.
-type LinterOptions struct {
+// Options contains the options for the linter.
+type Options struct {
 	// Exclude patterns, separated by commas (e.g., *.log,*.tmp).
 	Exclude []string
 	// Number of parallel jobs.
@@ -18,22 +21,11 @@ type LinterOptions struct {
 	Hidden          bool
 	Quiet           bool
 	Verbose         bool
+	Exp             bool
 }
 
-// CLIOptions contains the configuration parsed from the CLI.
-type CLIOptions struct {
-	fix      bool
-	verbose  bool
-	exclude  string
-	hidden   bool
-	parallel int
-	version  bool
-	quiet    bool
-	patterns []string
-}
-
-// parse collects the commandline arguments and returns them as a CLIOptions struct.
-func parse() CLIOptions {
+// Parse collects the commandline arguments and returns them as a CLIOptions struct.
+func (w *Wslint) Parse() {
 	// Flags for the CLI
 	var (
 		fix      = flag.Bool("w", false, "format file in-place")
@@ -43,8 +35,11 @@ func parse() CLIOptions {
 		parallel = flag.Int("j", runtime.NumCPU(), "number of parallel jobs, defaults to number of CPUs")
 		version  = flag.Bool("v", false, "print version")
 		quiet    = flag.Bool("q", false, "suppress messages")
+		exp      = flag.Bool("exp", false, "enable experimental features")
 	)
 
+	// No time stamp in the log output
+	log.SetFlags(0)
 	// Set the usage message & parse the flags
 	flag.Usage = usage
 	flag.Parse()
@@ -61,14 +56,39 @@ func parse() CLIOptions {
 		exit(1, "Error: Number of parallel jobs must be greater than 0")
 	}
 
-	return CLIOptions{
-		fix:      *fix,
-		verbose:  *verbose,
-		exclude:  *exclude,
-		hidden:   *hidden,
-		parallel: *parallel,
-		version:  *version,
-		quiet:    *quiet,
-		patterns: flag.Args(),
+	// Create a logger for debug messages
+	verboseLog := log.New(os.Stdout, "", 0)
+	if !*verbose {
+		// Disable debug messages if the verbose flag is not set,
+		verboseLog.SetOutput(io.Discard)
+	}
+
+	// Disable the logger if the quiet flag is set
+	if *quiet {
+		log.SetOutput(io.Discard)
+		verboseLog.SetOutput(io.Discard)
+	}
+
+	// Split the exclude patterns into a slice
+	excludes := strings.Split(*exclude, ",")
+
+	for i, exclude := range excludes {
+		// Remove any leading and trailing whitespace
+		exclude = strings.TrimSpace(exclude)
+		// Remove "./" from the beginning of the pattern, if it exists
+		exclude = strings.TrimPrefix(exclude, "./")
+		excludes[i] = exclude
+	}
+
+	w.options = Options{
+		Exclude:         excludes,
+		NumberOfWorkers: *parallel,
+		Fix:             *fix,
+		Logger:          verboseLog,
+		Patterns:        flag.Args(),
+		Hidden:          *hidden,
+		Quiet:           *quiet,
+		Verbose:         *verbose,
+		Exp:             *exp,
 	}
 }

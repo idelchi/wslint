@@ -18,6 +18,8 @@ type Blanks struct {
 	rows []int
 	// Error associated with the number of blank lines.
 	error error
+	// Recorded lines
+	lines int
 }
 
 // Analyze determines whether the line is blank or not, and records its row number accordingly.
@@ -31,6 +33,7 @@ func (b *Blanks) Analyze(line string, row int) {
 		// Blank line, record the row number.
 		b.rows = append(b.rows, row)
 	}
+	b.lines++
 }
 
 // Finalize evaluates the correctness of blank lines at the end of the file.
@@ -45,6 +48,7 @@ func (b *Blanks) Finalize() {
 	// no blank lines at the end
 	case 0:
 		b.error = ErrTooFewBlanks
+		b.rows = []int{b.lines}
 	// more than one blank line at the end
 	default:
 		b.error = ErrTooManyBlanks
@@ -68,4 +72,9 @@ func (b *Blanks) Stop() int {
 // Fix returns the line as is.
 func (b *Blanks) Fix(line string) string {
 	return line
+}
+
+// Info returns extra information.
+func (b *Blanks) Info() []string {
+	return nil
 }
