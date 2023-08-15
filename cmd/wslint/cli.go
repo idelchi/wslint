@@ -8,7 +8,9 @@ import (
 
 // LinterOptions contains the options for the linter.
 type LinterOptions struct {
-	Exclude         []string
+	// Exclude patterns, separated by commas (e.g., *.log,*.tmp).
+	Exclude []string
+	// Number of parallel jobs.
 	NumberOfWorkers int
 	Fix             bool
 	Logger          *log.Logger
@@ -30,6 +32,7 @@ type CLIOptions struct {
 	patterns []string
 }
 
+// parse collects the commandline arguments and returns them as a CLIOptions struct.
 func parse() CLIOptions {
 	// Flags for the CLI
 	var (

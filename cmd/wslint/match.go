@@ -8,7 +8,7 @@ import (
 	"github.com/idelchi/wslint/matcher"
 )
 
-func match(options LinterOptions) int {
+func match(options LinterOptions) (files []linter.Linter) {
 	verboseLog := options.Logger
 	patterns := options.Patterns
 	hidden := options.Hidden
@@ -22,12 +22,9 @@ func match(options LinterOptions) int {
 		if err := matcher.Match(arg); err != nil {
 			log.Printf("Error: %v", err)
 
-			return 1
+			return files
 		}
 	}
-
-	// Create a slice of files to inspect
-	files := []linter.Linter{}
 
 	// Fill the slice with files
 	for _, file := range matcher.ListFiles() {
@@ -44,12 +41,9 @@ func match(options LinterOptions) int {
 		verboseLog.Printf("<included> %q", file)
 	}
 
-	// If no files are found, exit with error code 0
 	if len(files) == 0 {
 		log.Println("No files found")
-
-		return 1
 	}
 
-	return process(options, files)
+	return files
 }

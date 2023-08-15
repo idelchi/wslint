@@ -68,5 +68,9 @@ func main() {
 		Hidden:          cli.hidden,
 	}
 
-	os.Exit(match(options))
+	if files := match(options); len(files) > 0 {
+		os.Exit(process(options, files))
+	}
+
+	os.Exit(1)
 }
