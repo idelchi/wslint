@@ -47,7 +47,6 @@ func (b *Blanks) Finalize() {
 		b.error = nil
 	// no blank lines at the end
 	case 0:
-		b.rows = []int{b.lines}
 		b.error = ErrTooFewBlanks
 	// more than one blank line at the end
 	default:
@@ -57,6 +56,10 @@ func (b *Blanks) Finalize() {
 
 // Results returns the rows at which blank lines occur, and the error associated with the number of blank lines.
 func (b *Blanks) Results() ([]int, error) {
+	if errors.Is(b.error, ErrTooFewBlanks) {
+		return []int{b.lines}, b.error
+	}
+
 	return b.rows, b.error
 }
 
