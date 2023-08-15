@@ -3,6 +3,7 @@
 package stuttering
 
 import (
+	"fmt"
 	"strings"
 	"unicode"
 )
@@ -23,7 +24,8 @@ func Find(line string) []string {
 		secondWord := words[i+1]
 
 		if strings.ToLower(firstWord) == normalize(secondWord) {
-			stutters = append(stutters, words[i])
+			stutter := fmt.Sprintf("%s %s", firstWord, secondWord)
+			stutters = append(stutters, stutter)
 		}
 	}
 	return stutters
