@@ -6,6 +6,8 @@ import (
 	"log"
 	"slices"
 
+	"github.com/fatih/color"
+
 	"github.com/idelchi/wslint/internal/checkers"
 )
 
@@ -203,28 +205,33 @@ func (l *Linter) Fix(file Writeable) (err error) {
 
 // Summary prints a summary of the file.
 func (l *Linter) Summary() (ok bool) {
+	// Use colored output for emphasis
+	filename := color.New(color.FgGreen, color.Bold).SprintFunc()
+	errorColor := color.New(color.FgRed).SprintFunc()
+	fixedMessage := color.New(color.FgYellow).SprintFunc()
+
 	// If the file itself had an error, print it and return.
 	if err := l.Error; err != nil {
-		log.Println(l.Name)
-		log.Println(err)
+		log.Println(filename(l.Name))
+		log.Printf("  %s", errorColor(err))
 
-		return
+		return ok
 	}
 
 	ok = !l.HasIssues()
 
 	if !ok {
-		log.Println(l.Name)
+		log.Println(filename(l.Name))
 
 		rows, err := l.GetIssues()
 
 		for i := range err {
-			log.Printf("- %v: at row(s): %v", err[i], rows[i])
+			log.Printf("  - %s: at row(s): %v", errorColor(err[i]), rows[i])
 		}
 	}
 
 	if l.Touched {
-		log.Printf("*** fixed ***")
+		log.Println(fixedMessage("*** fixed ***"))
 	}
 
 	return ok

@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"github.com/idelchi/wslint/internal/linter"
 )
 
 //nolint:gochecknoglobals // Global variable for CI stamping.
@@ -58,19 +60,38 @@ func main() {
 		excludes[i] = exclude
 	}
 
-	// Create the options
-	options := LinterOptions{
-		Exclude:         excludes,
-		NumberOfWorkers: cli.parallel,
-		Fix:             cli.fix,
-		Logger:          verboseLog,
-		Patterns:        cli.patterns,
-		Hidden:          cli.hidden,
+	// Create the Wslint instance
+
+	wslint := Wslint{
+		options: LinterOptions{
+			Exclude:         excludes,
+			NumberOfWorkers: cli.parallel,
+			Fix:             cli.fix,
+			Logger:          verboseLog,
+			Patterns:        cli.patterns,
+			Hidden:          cli.hidden,
+		},
 	}
 
-	if files := match(options); len(files) > 0 {
-		os.Exit(process(options, files))
+	if wslint.Match(); len(wslint.files) == 0 {
+		os.Exit(1)
 	}
 
-	os.Exit(1)
+	os.Exit(wslint.Process())
+}
+
+// Wslint acts as a wrapper for the main functionality.
+type Wslint struct {
+	options LinterOptions
+	files   []linter.Linter
+}
+
+// Match stores the files that match the patterns.
+func (w *Wslint) Match() {
+	w.files = match(w.options)
+}
+
+// Process processes the files, prints out the results and returns the exit code.
+func (w *Wslint) Process() int {
+	return process(w.options, w.files)
 }
