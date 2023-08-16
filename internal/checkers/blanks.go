@@ -2,6 +2,8 @@ package checkers
 
 import (
 	"errors"
+	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -26,6 +28,8 @@ func (b Blanks) check(lines []string) (rows []int) {
 		}
 	}
 
+	slices.Reverse(rows)
+
 	return
 }
 
@@ -39,19 +43,24 @@ func (b Blanks) assert(rows []int) (errors []error) {
 		errors = append(errors, ErrTooFewBlanks)
 	// more than one blank line at the end
 	default:
-		errors = append(errors, ErrTooManyBlanks)
+		errors = append(errors, fmt.Errorf("%w: rows %v", ErrTooManyBlanks, rows))
 	}
 
 	return
 }
 
 func (b Blanks) format(lines []string, rows []int) []string {
-	if len(rows) == 0 {
-		// Add one blank line at the end if there's none.
+	switch blanks := len(rows); blanks {
+	// one blank line at the end
+	case 1:
+		return lines
+	// no blank lines at the end
+	case 0:
 		return append(lines, "")
+	// more than one blank line at the end
+	default:
+		return lines[:rows[1]]
 	}
-	// Keep only one blank line and remove the rest.
-	return lines[:rows[len(rows)-1]]
 }
 
 func (b Blanks) Format(lines []string) ([]string, []error) {

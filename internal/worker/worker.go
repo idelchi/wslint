@@ -117,7 +117,6 @@ func worker(
 				if err = os.Chmod(file.Name, info.Mode()); err != nil {
 					panic("failed to change file permissions")
 				}
-
 			}
 		}()
 

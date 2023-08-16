@@ -19,11 +19,17 @@ func Has(line string) bool {
 func Find(line string) []string {
 	words := tokenize(line)
 	stutters := []string{}
+
+	// If there are less than two words, there can be no stuttering words.
+	if len(words) < 2 {
+		return stutters
+	}
+
 	for i := 0; i < len(words)-1; i++ {
 		firstWord := words[i]
 		secondWord := words[i+1]
 
-		if strings.ToLower(firstWord) == normalize(secondWord) {
+		if isStutteringPair(firstWord, secondWord) {
 			stutter := fmt.Sprintf("(%s %s)", firstWord, secondWord)
 			stutters = append(stutters, stutter)
 		}
@@ -37,6 +43,12 @@ func Find(line string) []string {
 func Trim(line string) string {
 	for Has(line) {
 		words := tokenize(line)
+
+		// If there are less than two words, there can be no stuttering words.
+		if len(words) < 2 {
+			return line
+		}
+
 		var result []string
 
 		i := 0
@@ -73,4 +85,13 @@ func normalize(word string) string {
 		word = word[:len(word)-1]
 	}
 	return strings.ToLower(word)
+}
+
+func isStutteringPair(firstWord, secondWord string) bool {
+	// We need to cover cases like:
+	// Word word 	-> Word
+	// Word word.	-> Word.
+	// word Word	-> word
+	// word Word. 	-> word.
+	return strings.ToLower(firstWord) == normalize(secondWord)
 }
