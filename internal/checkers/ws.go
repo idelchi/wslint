@@ -2,6 +2,7 @@ package checkers
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/idelchi/wslint/trailing"
 )
@@ -10,43 +11,43 @@ import (
 var ErrHasTrailing = errors.New("has trailing whitespace")
 
 // Whitespace keeps track of trailing whitespaces.
-type Whitespace struct {
-	// Row(s) where the whitespace is found.
-	rows []int
-	// Error associated with the whitespace.
-	error error
-}
+type Whitespace struct{}
 
-// Analyze determines if the line has trailing whitespace(s) and appends the row to the list of rows.
-func (w *Whitespace) Analyze(line string, row int) {
-	if trailing.Has(line) {
-		w.rows = append(w.rows, row)
+// check identifies the lines that have trailing whitespaces.
+func (w Whitespace) check(lines []string) (rows []int) {
+	for i, line := range lines {
+		if trailing.Has(line) {
+			rows = append(rows, i)
+		}
 	}
+	return
 }
 
-// Finalize evaluates the correctness of trailing whitespace(s).
-func (w *Whitespace) Finalize() {
-	if w.rows != nil {
-		w.error = ErrHasTrailing
+// assert evaluates the correctness of trailing whitespaces.
+// If rows is not empty, it means some lines have trailing whitespaces.
+func (w Whitespace) assert(rows []int) (errors []error) {
+	if len(rows) > 0 {
+		errors = append(errors, fmt.Errorf("%w: on rows %v", ErrHasTrailing, rows))
 	}
+	return
 }
 
-// Results returns the rows and error associated with the whitespace.
-func (w *Whitespace) Results() ([]int, error) {
-	return w.rows, w.error
+// format removes trailing whitespaces from lines identified in rows.
+func (w Whitespace) format(lines []string, rows []int) []string {
+	for _, i := range rows {
+		lines[i] = trailing.Trim(lines[i])
+	}
+	return lines
 }
 
-// Stop returns 0.
-func (w *Whitespace) Stop() int {
-	return 0
-}
+// Format checks the lines for trailing whitespaces, asserts any errors,
+// and then formats the lines to remove those whitespaces.
+func (w Whitespace) Format(lines []string) ([]string, []error) {
+	rows := w.check(lines)
+	errs := w.assert(rows)
+	if len(errs) == 0 {
+		return lines, errs
+	}
 
-// Fix removes trailing whitespace(s) from the line.
-func (w *Whitespace) Fix(line string) string {
-	return trailing.Trim(line)
-}
-
-// Info returns extra information.
-func (w *Whitespace) Info() []string {
-	return nil
+	return w.format(lines, rows), errs
 }

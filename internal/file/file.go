@@ -1,3 +1,5 @@
+//go:build excluded
+
 package linter
 
 import (

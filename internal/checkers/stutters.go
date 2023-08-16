@@ -3,7 +3,6 @@ package checkers
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/idelchi/wslint/stuttering"
 )
@@ -12,48 +11,42 @@ import (
 var ErrStutter = errors.New("stutters")
 
 // Stutters keeps track of stuttering words.
-type Stutters struct {
-	// Row(s) where the stutter is found.
-	rows []int
-	// Error associated with the stutter.
-	error error
-	// Lines with stutter(s).
-	lines []string
-}
+type Stutters struct{}
 
-// Analyze determines if the line has trailing stutter(s) and appends the row to the list of rows.
-func (s *Stutters) Analyze(line string, row int) {
-	if stuttering.Has(line) {
-		s.rows = append(s.rows, row)
-		stutters := stuttering.Find(line)
-		line = fmt.Sprintf("'%s' contains the stutters '%s'", strings.TrimSpace(line), strings.Join(stutters, ", "))
-		s.lines = append(s.lines, line)
+func (s Stutters) check(lines []string) (rows []int, stutters map[int][]string) {
+	stutters = make(map[int][]string)
+	for i, line := range lines {
+		if stuttering.Has(line) {
+			words := stuttering.Find(line)
+			stutters[i] = words
+			rows = append(rows, i)
+		}
 	}
+	return
 }
 
-// Finalize evaluates the correctness of trailing stutter(s).
-func (s *Stutters) Finalize() {
-	if s.rows != nil {
-		s.error = ErrStutter
+func (s Stutters) assert(rows []int, stutters map[int][]string) (errors []error) {
+	if len(rows) > 0 {
+		for i, row := range rows {
+			errors = append(errors, fmt.Errorf("%w: on line %d: words %v", ErrStutter, row, stutters[i]))
+		}
 	}
+	return
 }
 
-// Results returns the rows and error associated with the stutter.
-func (s *Stutters) Results() ([]int, error) {
-	return s.rows, s.error
+func (s Stutters) format(lines []string, rows []int) []string {
+	for _, i := range rows {
+		lines[i] = stuttering.Trim(lines[i])
+	}
+	return lines
 }
 
-// Stop returns 0.
-func (s *Stutters) Stop() int {
-	return 0
-}
+func (s Stutters) Format(lines []string) ([]string, []error) {
+	rows, stutters := s.check(lines)
+	errs := s.assert(rows, stutters)
+	if len(errs) == 0 {
+		return lines, errs
+	}
 
-// Fix removes stutter(s) from the line.
-func (s *Stutters) Fix(line string) string {
-	return stuttering.Trim(line)
-}
-
-// Info returns extra information about the stutter(s).
-func (s *Stutters) Info() []string {
-	return s.lines
+	return s.format(lines, rows), errs
 }

@@ -45,7 +45,7 @@ func (w *Wslint) Match() {
 		// TODO(Idelchi) Set up a factory function for this
 		lint := linter.New(file)
 		if w.options.Exp {
-			lint.InsertChecker(&checkers.Stutters{})
+			lint.InsertChecker("stutter", checkers.Stutters{})
 		}
 
 		// Append the linter to the slice

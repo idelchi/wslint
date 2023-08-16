@@ -24,7 +24,7 @@ func Find(line string) []string {
 		secondWord := words[i+1]
 
 		if strings.ToLower(firstWord) == normalize(secondWord) {
-			stutter := fmt.Sprintf("%s %s", firstWord, secondWord)
+			stutter := fmt.Sprintf("(%s %s)", firstWord, secondWord)
 			stutters = append(stutters, stutter)
 		}
 	}
