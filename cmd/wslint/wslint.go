@@ -51,8 +51,11 @@ func (w *Wslint) Match() {
 			stutter := checkers.Stutter{}
 			// Load file in config/stutters and read into a slice of strings
 			// Pass the slice to the checker
-			if content, err := os.ReadFile("config/stutters"); err == nil {
-				stutter.Exceptions = strings.Split(string(content), "\n")
+			configurationFile := "config/stutters"
+			if _, err := os.Stat(configurationFile); !os.IsNotExist(err) {
+				if content, err := os.ReadFile(configurationFile); err == nil {
+					stutter.Exceptions = strings.Split(string(content), "\n")
+				}
 			}
 
 			lint.InsertChecker("stutter", stutter)

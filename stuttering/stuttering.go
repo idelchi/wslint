@@ -1,5 +1,4 @@
 // Package stuttering provides functions to check for and identify stuttering words in a string.
-// TODO(Idelchi): Read https://gophersnippets.com/how-to-parse-comments-from-go-code
 package stuttering
 
 import (
