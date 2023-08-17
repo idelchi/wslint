@@ -4,3 +4,5 @@
 (logger Logger))
 (options Options)
 (HEAD HEAD~)
+(hello hello!)
+(hi hi!",)
