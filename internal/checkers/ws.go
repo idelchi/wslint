@@ -28,6 +28,7 @@ func (w Whitespace) check(lines []string) (rows []int) {
 // If rows is not empty, it means some lines have trailing whitespaces.
 func (w Whitespace) assert(rows []int) (errors []error) {
 	if len(rows) > 0 {
+		// TODO(Idelchi): Would be clearer to the user if the row values are incremented by 1.
 		errors = append(errors, fmt.Errorf("%w: on rows %v", ErrHasTrailing, rows))
 	}
 

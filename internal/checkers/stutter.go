@@ -37,6 +37,7 @@ func (s Stutter) check(lines []string) (rows []int, stutters map[int][]string) {
 func (s Stutter) assert(rows []int, stutters map[int][]string) (errors []error) {
 	if len(rows) > 0 {
 		for _, row := range rows {
+			// TODO(Idelchi): Would be clearer to the user if the row values are incremented by 1.
 			errors = append(errors, fmt.Errorf("%w: on line %d: words %v", ErrStutter, row, stutters[row]))
 		}
 	}

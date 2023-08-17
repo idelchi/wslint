@@ -50,6 +50,7 @@ func (b Blanks) assert(rows []int) []error {
 		return nil
 	// more than one blank line at the end
 	default:
+		// TODO(Idelchi): Would be clearer to the user if the row values are incremented by 1.
 		return []error{fmt.Errorf("%w: rows %v", ErrTooManyBlanks, rows)}
 	}
 }
