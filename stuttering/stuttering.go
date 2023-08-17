@@ -53,14 +53,19 @@ func Trim(line string) string {
 
 		for index := 0; index < len(words); index++ {
 			// Check if the next word exists and if it forms a stutter with the current word.
-			if index < len(words)-1 && strings.ToLower(words[index]) == normalize(words[index+1]) {
-				// If a stutter is found, add the second word (with its non-alphabet characters) to the result.
-				result = append(result, words[index+1])
-				index++ // Move to the word after the stutter.
-			} else {
-				// If no stutter is found, add the current word to the result.
-				result = append(result, words[index])
+			firstWord := words[index]
+
+			if index < len(words)-1 {
+				if secondWord := words[index+1]; isStutteringPair(firstWord, secondWord) {
+					// If a stutter is found, add the second word (with its non-alphabet characters) to the result.
+					result = append(result, secondWord)
+					index++ // Move to the word after the stutter.
+
+					continue
+				}
 			}
+			// If no stutter is found, add the current word to the result.
+			result = append(result, firstWord)
 		}
 
 		line = strings.Join(result, " ")
@@ -76,17 +81,22 @@ func tokenize(line string) []string {
 }
 
 // normalize removes non-alphabet characters from the end of a word and converts to lower-case.
-func normalize(word string) string {
+func normalize2(word string) string {
 	for len(word) > 0 && !unicode.IsLetter(rune(word[len(word)-1])) {
 		word = word[:len(word)-1]
 	}
 
-	return strings.ToLower(word)
+	return strings.TrimSpace(strings.ToLower(word))
+}
+
+// normalize removes non-alphabet characters from the end of a word and converts to lower-case.
+func normalize1(word string) string {
+	return strings.TrimSpace(strings.ToLower(word))
 }
 
 // isStutteringPair checks if two words form a stuttering pair.
 // At the moment, the first word is converted to lower-case and compared to the second word
 // with non-alphabet characters removed.
 func isStutteringPair(firstWord, secondWord string) bool {
-	return strings.ToLower(firstWord) == normalize(secondWord)
+	return normalize1(firstWord) == normalize2(secondWord)
 }
