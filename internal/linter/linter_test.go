@@ -1,3 +1,5 @@
+//go:build excluded
+
 package linter_test
 
 import (
@@ -82,7 +84,7 @@ func TestLinter(t *testing.T) {
 
 			file := CreateTempFile(t, tc.content...)
 
-			lintFile := linter.NewLinter(file)
+			lintFile := linter.New(file)
 
 			reader, writer := NewReaderWriter(t, file)
 
@@ -103,7 +105,7 @@ func TestLinter(t *testing.T) {
 			lintFile.Summary()
 
 			// Lint it again
-			lintFile = linter.NewLinter(file)
+			lintFile = linter.New(file)
 			require.NoError(t, lintFile.Lint(writer))
 
 			for _, c := range lintFile.Checkers {

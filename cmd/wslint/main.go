@@ -2,10 +2,12 @@ package main
 
 import (
 	"flag"
-	"io"
 	"log"
 	"os"
-	"strings"
+	"os/signal"
+	"syscall"
+
+	"github.com/fatih/color"
 )
 
 //nolint:gochecknoglobals // Global variable for CI stamping.
@@ -29,44 +31,41 @@ func exit(code int, msg string) {
 }
 
 func main() {
-	// No time stamp in the log output
-	log.SetFlags(0)
+	// Create the Wslint instance
+	wslint := Wslint{}
 
-	cli := parse()
+	wslint.Parse()
 
-	// Create a logger for debug messages
-	verboseLog := log.New(os.Stdout, "", 0)
-	if !cli.verbose {
-		// Disable debug messages if the verbose flag is not set,
-		verboseLog.SetOutput(io.Discard)
+	if wslint.options.Exp {
+		if wslint.options.Fix {
+			log.Println(color.YellowString("Experimental feature may not work as expected"))
+			log.Println(color.YellowString("Press [enter] to continue or [ctrl+c] to abort"))
+
+			sigCh := make(chan os.Signal, 1)
+			enterCh := make(chan struct{})
+
+			// Register to receive SIGINT (Ctrl+C) signals
+			signal.Notify(sigCh, syscall.SIGINT)
+
+			// Goroutine to detect the Enter key
+			go func() {
+				_, _ = os.Stdin.Read([]byte{0})
+				enterCh <- struct{}{}
+			}()
+
+			select {
+			case <-sigCh:
+				log.Println("Ctrl+C was pressed. Aborting...")
+				os.Exit(0)
+			case <-enterCh:
+				log.Println("Enter was pressed. Continuing...")
+			}
+		}
 	}
 
-	// Disable the logger if the quiet flag is set
-	if cli.quiet {
-		log.SetOutput(io.Discard)
-		verboseLog.SetOutput(io.Discard)
+	if wslint.Match(); len(wslint.files) == 0 {
+		os.Exit(1)
 	}
 
-	// Split the exclude patterns into a slice
-	excludes := strings.Split(cli.exclude, ",")
-
-	for i, exclude := range excludes {
-		// Remove any leading and trailing whitespace
-		exclude = strings.TrimSpace(exclude)
-		// Remove "./" from the beginning of the pattern, if it exists
-		exclude = strings.TrimPrefix(exclude, "./")
-		excludes[i] = exclude
-	}
-
-	// Create the options
-	options := LinterOptions{
-		Exclude:         excludes,
-		NumberOfWorkers: cli.parallel,
-		Fix:             cli.fix,
-		Logger:          verboseLog,
-		Patterns:        cli.patterns,
-		Hidden:          cli.hidden,
-	}
-
-	os.Exit(match(options))
+	os.Exit(wslint.Process())
 }

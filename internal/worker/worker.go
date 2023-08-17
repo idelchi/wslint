@@ -15,8 +15,14 @@ package worker
 
 import (
 	"log"
+	"os"
+	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/exp/slices"
+
+	"github.com/natefinch/atomic"
 
 	"github.com/idelchi/wslint/internal/linter"
 )
@@ -91,17 +97,27 @@ func worker(
 		logger.Printf("<processing> %q", file.Name)
 
 		func() {
-			reader := &linter.Reader{}
-
-			if file.Error = file.Lint(reader); file.Error != nil {
-				return
+			// TODO(Idelchi): Work with []byte instead of string
+			content, err := os.ReadFile(file.Name)
+			if err != nil {
+				panic("failed to read file")
 			}
 
-			if fix && file.HasIssues() {
-				writer := &linter.Writer{
-					Main: reader,
+			src := strings.Split(string(content), "\n")
+			res := make([]string, len(src))
+			copy(res, src)
+
+			res = file.Format(res)
+
+			if !slices.Equal(src, res) && fix {
+				info, _ := os.Lstat(file.Name)
+				if err := atomic.WriteFile(file.Name, strings.NewReader(strings.Join(res, "\n"))); err != nil {
+					panic("failed to write file")
 				}
-				file.Error = file.Fix(writer)
+
+				if err = os.Chmod(file.Name, info.Mode()); err != nil {
+					panic("failed to change file permissions")
+				}
 			}
 		}()
 

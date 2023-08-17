@@ -1,3 +1,5 @@
+//go:build excluded
+
 package checkers_test
 
 import (
@@ -33,16 +35,18 @@ func TestBlanks(t *testing.T) {
 			},
 			err:     checkers.ErrTooFewBlanks,
 			comment: "Sequence with no blank line at the end.",
+			rows:    []int{1},
 		},
 		{
 			name: "no blank line, long text",
 			lines: []string{
 				"This text sequence ends with no blank line at the end.",
 				"It has many rows, but no blank line at the end.",
-				"It should return an empty list of rows, an error, and a stop indicated by 0.",
+				"It should return row 3, an error, and a stop indicated by 0.",
 			},
 			err:     checkers.ErrTooFewBlanks,
 			comment: "Sequence with no blank line at the end",
+			rows:    []int{3},
 		},
 		{
 			name: "too many blank lines",

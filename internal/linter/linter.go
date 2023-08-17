@@ -1,66 +1,45 @@
 package linter
 
 import (
-	"errors"
-	"fmt"
 	"log"
-	"slices"
+
+	"github.com/fatih/color"
 
 	"github.com/idelchi/wslint/internal/checkers"
 )
 
 // Checker represents a line analyser.
 type Checker interface {
-	Analyze(string, int)
-	Finalize()
-	Results() ([]int, error)
-	Fix(string) string
-	Stop() int
+	Format([]string) ([]string, []error)
 }
 
-// Writeable describes a file that can be written to.
-type Writeable interface {
-	Readable
-	Write(...string) error
-	Save() error
-}
-
-// Readable describes a file that can be read from.
-type Readable interface {
-	Open() error
-	Close() error
-	HasLines() bool
-	Next() (string, error)
-	Load(...string) error
-}
-
-// Linter represents a file linter.
+// Linter represents a text linter.
 type Linter struct {
-	// Name contains the name of file to lint.
 	Name string
-	// Checkers contains the checkers to be used.
-	Checkers []Checker
+	// Checkers is a map with name and checker to use.
+	Checkers map[string]Checker
 	// Error contains the error, if any.
-	Error error
-	// Touched is a flag whether the file has been touched.
-	Touched bool
+	Errors map[string][]error
+	// The lines formatted.
+	Lines []string
 }
 
 // InsertChecker adds a checker to the list of checkers in use.
-func (l *Linter) InsertChecker(c Checker) {
-	l.Checkers = append(l.Checkers, c)
+func (l *Linter) InsertChecker(name string, c Checker) {
+	l.Checkers[name] = c
 }
 
-// NewLinter creates a new linter, with the default checkers.
-func NewLinter(name string) *Linter {
-	defaultCheckers := []Checker{
-		&checkers.Whitespace{},
-		&checkers.Blanks{},
+// New creates a new linter, with the default checkers.
+func New(name string) *Linter {
+	defaultCheckers := map[string]Checker{
+		"whitespace": checkers.Whitespace{},
+		"blanks":     checkers.Blanks{},
 	}
 
 	return &Linter{
 		Name:     name,
 		Checkers: defaultCheckers,
+		Errors:   make(map[string][]error),
 	}
 }
 
@@ -69,162 +48,47 @@ func (l *Linter) HasCheckers() bool {
 	return l.Checkers != nil && len(l.Checkers) > 0
 }
 
-// Lint checks the file.
-func (l *Linter) Lint(file Readable) (err error) {
-	if !l.HasCheckers() {
-		return ErrNoCheckers
-	}
-
-	if err := file.Load(l.Name); err != nil {
-		return fmt.Errorf("error loading file: %w", err)
-	}
-
-	// Defer the file closing.
-	defer func() {
-		if errClose := file.Close(); err == nil && errClose != nil {
-			err = errClose
-		}
-	}()
-
-	for _, c := range l.Checkers {
-		defer c.Finalize()
-	}
-
-	for row := 1; file.HasLines(); row++ {
-		line, err := file.Next()
-		if err != nil {
-			return fmt.Errorf("error reading file: %w", err)
-		}
-
-		for _, c := range l.Checkers {
-			c.Analyze(line, row)
-		}
-	}
-
-	return err
-}
-
-// ErrNoCheckers is returned when no checkers have been configured.
-var ErrNoCheckers = errors.New("no checkers configured")
-
-// GetIssues returns a list of rows with issues and a list of errors.
-func (l *Linter) GetIssues() (rows [][]int, errs []error) {
-	for _, c := range l.Checkers {
-		row, err := c.Results()
-		if err != nil {
-			rows = append(rows, row)
-			errs = append(errs, err)
-		}
-	}
-
-	return
-}
-
-// HasIssues takes a list of errors and returns false if all errors are nil.
 func (l *Linter) HasIssues() bool {
-	_, errors := l.GetIssues()
-
-	return len(errors) > 0
+	return len(l.Errors) > 0
 }
 
-// Fix fixes the file by removing trailing whitespaces and blank lines.
-//
-//nolint:cyclop,funlen
-func (l *Linter) Fix(file Writeable) (err error) {
+// Format returns the formatted string.
+func (l *Linter) Format(lines []string) []string {
 	if !l.HasCheckers() {
-		return ErrNoCheckers
+		panic("no checkers configured")
 	}
 
-	if err := file.Load(l.Name); err != nil {
-		return fmt.Errorf("error loading file: %w", err)
-	}
-
-	defer func() {
-		if errClose := file.Close(); err == nil && errClose != nil {
-			err = errClose
-		}
-	}()
-
-	// For each checker, check if a stop row has been set.
-	// This is used to stop the loop when the last error has been fixed.
-	stops := make([]int, len(l.Checkers))
-
-	for i, c := range l.Checkers {
-		stops[i] = c.Stop()
-	}
-
-	// Sort the stop rows to get the highest one
-	slices.Sort(stops)
-	// Fetch the last stop row
-	stop := stops[len(stops)-1]
-
-	// // Write the fixed file to the temporary file
-	for row := 1; file.HasLines(); row++ {
-		if row == stop {
-			break
-		}
-
-		line, err := file.Next()
-		eof := !file.HasLines()
-
-		if err != nil {
-			return fmt.Errorf("error getting next line: %w", err)
-		}
-
-		// If a line contains trailing whitespace, remove it
-		// Not super efficient, but simpler. It becomes only a problem if the number of rows are huge.
-		for _, c := range l.Checkers {
-			rows, err := c.Results()
-			if err != nil && slices.Contains(rows, row) {
-				line = c.Fix(line)
-			}
-		}
-
-		// This is an annoying edge case. If the last line is empty, the there will already
-		// have been a newline written to the temporary file. If we don't check for this,
-		// we will end up with two newlines at the end of the file.
-		if eof && line == "" {
-			break
-		}
-
-		if err := file.Write(line); err != nil {
-			return fmt.Errorf("failed to copy line %d to temporary file: %w", row, err)
+	var errors []error
+	for name, checker := range l.Checkers {
+		if lines, errors = checker.Format(lines); len(errors) > 0 {
+			l.Errors[name] = errors
 		}
 	}
 
-	if err = file.Save(); err != nil {
-		err = fmt.Errorf("failed to save temporary file: %w", err)
-	}
-
-	l.Touched = true
-
-	return err
+	return lines
 }
 
 // Summary prints a summary of the file.
 func (l *Linter) Summary() (ok bool) {
-	// If the file itself had an error, print it and return.
-	if err := l.Error; err != nil {
-		log.Println(l.Name)
-		log.Println(err)
-
-		return
-	}
+	// Use coloured output for emphasis
+	filename := color.New(color.FgGreen, color.Bold).SprintFunc()
+	errorColor := color.New(color.FgRed).SprintFunc()
 
 	ok = !l.HasIssues()
 
 	if !ok {
-		log.Println(l.Name)
+		log.Println(filename(l.Name))
+		errors := l.Errors
 
-		rows, err := l.GetIssues()
+		// Get all the keys in errors
+		// checkers := maps.Keys(errors)
 
-		for i := range err {
-			log.Printf("- %v: at row(s): %v", err[i], rows[i])
+		for name, errors := range errors {
+			log.Println("  - Errors detected: ", errorColor(name))
+			for _, err := range errors {
+				log.Printf("    - %s", errorColor(err))
+			}
 		}
-	}
-
-	if l.Touched {
-		log.Printf("*** fixed ***")
 	}
 
 	return ok

@@ -2,6 +2,8 @@ package checkers
 
 import (
 	"errors"
+	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -12,60 +14,71 @@ var (
 	ErrTooManyBlanks = errors.New("more than one blank line at the end of the file")
 )
 
-// Blanks keeps track of the number of blank lines at the end of the file.
-type Blanks struct {
-	// Rows are the rows (at the end) at which blank lines occur.
-	rows []int
-	// Error associated with the number of blank lines.
-	error error
-}
+// Blanks is a checker that checks for trailing empty lines at the end of a sequence of lines.
+// It returns an error if there are no blank lines at the end of the file or if there are more than one.
+// It returns the formatted lines with the correct number of blank lines at the end of the file.
+type Blanks struct{}
 
-// Analyze determines whether the line is blank or not, and records its row number accordingly.
-// It considers a line to be blank if it is empty after trimming the leading and trailing spaces.
-func (b *Blanks) Analyze(line string, row int) {
-	line = strings.TrimSpace(line)
-	if line != "" {
-		// Not a blank line, reset the record of blank lines.
-		b.rows = nil
-	} else {
-		// Blank line, record the row number.
-		b.rows = append(b.rows, row)
+// check checks for trailing empty lines at the end of a sequence of lines.
+// It returns the rows that are blank (at the end).
+func (b Blanks) check(lines []string) (rows []int) {
+	for i := len(lines) - 1; i >= 0; i-- {
+		line := strings.TrimSpace(lines[i])
+		if line == "" {
+			// Blank line, record the row number.
+			rows = append(rows, i)
+		} else {
+			// Not a blank line, stop the analysis.
+			break
+		}
 	}
+
+	// Reverse the slice to get the last non-blank entry as the first index.
+	slices.Reverse(rows)
+
+	return
 }
 
-// Finalize evaluates the correctness of blank lines at the end of the file.
-// If b.rows is empty, there are no blank lines at the end of the file.
-// If b.rows has only one element, then there is one blank line at the end of the file.
-// Any other value, means there are too many blank lines at the end of the file.
-func (b *Blanks) Finalize() {
-	switch blanks := len(b.rows); blanks {
-	// one blank line at the end
-	case 1:
-		b.error = nil
+// assert returns an error based on the number of blank lines at the end of the sequence of lines.
+func (b Blanks) assert(rows []int) []error {
+	switch blanks := len(rows); blanks {
 	// no blank lines at the end
 	case 0:
-		b.error = ErrTooFewBlanks
+		return []error{ErrTooFewBlanks}
+	// one blank line at the end
+	case 1:
+		return nil
 	// more than one blank line at the end
 	default:
-		b.error = ErrTooManyBlanks
+		// TODO(Idelchi): Would be clearer to the user if the row values are incremented by 1.
+		return []error{fmt.Errorf("%w: rows %v", ErrTooManyBlanks, rows)}
 	}
 }
 
-// Results returns the rows at which blank lines occur, and the error associated with the number of blank lines.
-func (b *Blanks) Results() ([]int, error) {
-	return b.rows, b.error
+// format returns the formatted lines with the correct number of blank lines at the end of the sequence of lines.
+func (b Blanks) format(lines []string, rows []int) []string {
+	switch blanks := len(rows); blanks {
+	// no blank lines at the end
+	case 0:
+		return append(lines, "")
+	// one blank line at the end
+	case 1:
+		return lines
+	// more than one blank line at the end
+	default:
+		return lines[:rows[1]]
+	}
 }
 
-// Stop returns the row at which the last useful blank line occurs.
-func (b *Blanks) Stop() int {
-	if b.rows != nil && b.error != nil {
-		return b.rows[0]
+// Format checks the correctness of the sequence of lines in terms of blank lines at the end,
+// applies the formatting if needed and returns the formatted lines along with the errors.
+func (b Blanks) Format(lines []string) ([]string, []error) {
+	rows := b.check(lines)
+	errs := b.assert(rows)
+
+	if len(errs) == 0 {
+		return lines, errs
 	}
 
-	return 0
-}
-
-// Fix returns the line as is.
-func (b *Blanks) Fix(line string) string {
-	return line
+	return b.format(lines, rows), errs
 }

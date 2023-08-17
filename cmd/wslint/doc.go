@@ -19,5 +19,6 @@ The flags are:
 	-v		Print the version number.
 	-d		Show debug output.
 	-q		Suppress messages.
+	-x		Enable experimental features.
 */
 package main
