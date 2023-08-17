@@ -109,4 +109,4 @@ The current list of experimental features is:
 - **stutters**: Remove stuttering words (e.g., `the the` -> `the`).
 
   _Current issues_: Will not respect case, puncuation, as it will always select the second occurence when fixing.
-  If exceptions are desired, they must be placed in a file config/stutters relative to the current working directory.
+  _Current limitations_: If exceptions are desired, they must be placed in a file `config/stutters` relative to the current working directory.
