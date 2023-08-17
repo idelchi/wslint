@@ -3,6 +3,7 @@ package stuttering
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"unicode"
 )
@@ -41,6 +42,12 @@ func Find(line string) []string {
 // It ensures that the second word of a stutter, including any trailing non-alphabetic characters, is retained.
 // It returns a new string with the first words of stuttering pairs removed.
 func Trim(line string) string {
+	// Identify and store the leading whitespace
+	re := regexp.MustCompile(`^(\s*)`)
+	leadingWhitespace := re.FindString(line)
+
+	line = line[len(leadingWhitespace):]
+
 	for Has(line) {
 		words := tokenize(line)
 
@@ -71,7 +78,7 @@ func Trim(line string) string {
 		line = strings.Join(result, " ")
 	}
 
-	return line
+	return leadingWhitespace + line
 }
 
 // tokenize converts a string into a slice of words.

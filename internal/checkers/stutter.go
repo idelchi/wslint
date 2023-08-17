@@ -19,14 +19,14 @@ type Stutter struct {
 func (s Stutter) check(lines []string) (rows []int, stutters map[int][]string) {
 	stutters = make(map[int][]string)
 
-	for i, line := range lines {
+	for row, line := range lines {
 		if stuttering.Has(line) {
 			words := stuttering.Find(line)
 
 			for _, word := range words {
 				if !slices.Contains(s.Exceptions, word) {
-					stutters[i] = words
-					rows = append(rows, i)
+					stutters[row] = words
+					rows = append(rows, row)
 				}
 			}
 		}
@@ -47,6 +47,7 @@ func (s Stutter) format(lines []string, rows []int) []string {
 	for _, i := range rows {
 		lines[i] = stuttering.Trim(lines[i])
 	}
+
 	return lines
 }
 
