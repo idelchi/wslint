@@ -20,10 +20,11 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/exp/slices"
+
 	"github.com/natefinch/atomic"
 
 	"github.com/idelchi/wslint/internal/linter"
-	"golang.org/x/exp/slices"
 )
 
 // Pool represents a pool of workers.

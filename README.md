@@ -19,7 +19,7 @@ and enforcing a single blank line at the end of each file.
 
 ## Installation
 
-    go install github.com/idelchi/wslint@latest
+    go install github.com/idelchi/wslint/cmd/wslint@latest
 
 ## Usage
 
@@ -63,6 +63,7 @@ Run wslint on the `my_project` directory with four parallel jobs:
 | `-v` | Print the version number.                                          |
 | `-d` | Show debug output.                                                 |
 | `-q` | Suppress messages.                                                 |
+| `-x` | Enable experimental features.                                      |
 
 ## Default Exclusion Patterns
 
@@ -95,3 +96,15 @@ Example:
 > **Warning**
 > This project serves as a learning exercise for Go and its surrounding ecosystem and tooling.
 > Users are advised against using this tool on files that are not under version control.
+
+## Experimental Features
+
+Experimental features are disabled by default. To enable them, use the `-x` flag.
+
+Beaware that applying formatting to files that are not under version control may result in data loss,
+as experimental features are not yet fully tested.
+
+The current list of experimental features is:
+
+- **stutters**: Remove stuttering words (e.g., `the the` -> `the`).
+  Current issues: Will not respect case, puncuation, as it will always select the second occurence when fixing.

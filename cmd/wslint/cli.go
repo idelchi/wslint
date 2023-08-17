@@ -25,6 +25,8 @@ type Options struct {
 }
 
 // Parse collects the commandline arguments and returns them as a CLIOptions struct.
+//
+//nolint:funlen // This function is long, but has one dedicated function.
 func (w *Wslint) Parse() {
 	// Flags for the CLI
 	var (
@@ -35,7 +37,7 @@ func (w *Wslint) Parse() {
 		parallel = flag.Int("j", runtime.NumCPU(), "number of parallel jobs, defaults to number of CPUs")
 		version  = flag.Bool("v", false, "print version")
 		quiet    = flag.Bool("q", false, "suppress messages")
-		exp      = flag.Bool("exp", false, "enable experimental features")
+		exp      = flag.Bool("x", false, "enable experimental features")
 	)
 
 	// No time stamp in the log output

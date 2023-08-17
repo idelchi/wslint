@@ -46,14 +46,16 @@ func (w *Wslint) Match() {
 
 		// TODO(Idelchi) Set up a factory function for this
 		lint := linter.New(file)
+
 		if w.options.Exp {
-			stutters := checkers.Stutters{}
+			stutter := checkers.Stutter{}
 			// Load file in config/stutters and read into a slice of strings
 			// Pass the slice to the checker
 			if content, err := os.ReadFile("config/stutters"); err == nil {
-				stutters.Exceptions = strings.Split(string(content), "\n")
+				stutter.Exceptions = strings.Split(string(content), "\n")
 			}
-			lint.InsertChecker("stutter", stutters)
+
+			lint.InsertChecker("stutter", stutter)
 		}
 
 		// Append the linter to the slice

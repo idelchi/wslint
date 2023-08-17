@@ -20,6 +20,7 @@ func (w Whitespace) check(lines []string) (rows []int) {
 			rows = append(rows, i)
 		}
 	}
+
 	return
 }
 
@@ -29,6 +30,7 @@ func (w Whitespace) assert(rows []int) (errors []error) {
 	if len(rows) > 0 {
 		errors = append(errors, fmt.Errorf("%w: on rows %v", ErrHasTrailing, rows))
 	}
+
 	return
 }
 
@@ -37,6 +39,7 @@ func (w Whitespace) format(lines []string, rows []int) []string {
 	for _, i := range rows {
 		lines[i] = trailing.Trim(lines[i])
 	}
+
 	return lines
 }
 

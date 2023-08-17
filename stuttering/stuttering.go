@@ -21,7 +21,7 @@ func Find(line string) []string {
 	stutters := []string{}
 
 	// If there are less than two words, there can be no stuttering words.
-	if len(words) < 2 {
+	if len(words) <= 1 {
 		return stutters
 	}
 
@@ -34,6 +34,7 @@ func Find(line string) []string {
 			stutters = append(stutters, stutter)
 		}
 	}
+
 	return stutters
 }
 
@@ -45,23 +46,21 @@ func Trim(line string) string {
 		words := tokenize(line)
 
 		// If there are less than two words, there can be no stuttering words.
-		if len(words) < 2 {
+		if len(words) <= 1 {
 			return line
 		}
 
 		var result []string
 
-		i := 0
-		for i < len(words) {
+		for index := 0; index < len(words); index++ {
 			// Check if the next word exists and if it forms a stutter with the current word.
-			if i < len(words)-1 && strings.ToLower(words[i]) == normalize(words[i+1]) {
+			if index < len(words)-1 && strings.ToLower(words[index]) == normalize(words[index+1]) {
 				// If a stutter is found, add the second word (with its non-alphabet characters) to the result.
-				result = append(result, words[i+1])
-				i += 2 // Move to the word after the stutter.
+				result = append(result, words[index+1])
+				index++ // Move to the word after the stutter.
 			} else {
 				// If no stutter is found, add the current word to the result.
-				result = append(result, words[i])
-				i++
+				result = append(result, words[index])
 			}
 		}
 
@@ -74,9 +73,7 @@ func Trim(line string) string {
 // tokenize converts a string into a slice of words.
 // This is a helper function and assumes words are separated by whitespace.
 func tokenize(line string) []string {
-	return strings.FieldsFunc(line, func(c rune) bool {
-		return unicode.IsSpace(c)
-	})
+	return strings.FieldsFunc(line, unicode.IsSpace)
 }
 
 // normalize removes non-alphabet characters from the end of a word and converts to lower-case.
@@ -84,14 +81,13 @@ func normalize(word string) string {
 	for len(word) > 0 && !unicode.IsLetter(rune(word[len(word)-1])) {
 		word = word[:len(word)-1]
 	}
+
 	return strings.ToLower(word)
 }
 
+// isStutteringPair checks if two words form a stuttering pair.
+// At the moment, the first word is converted to lower-case and compared to the second word
+// with non-alphabet characters removed.
 func isStutteringPair(firstWord, secondWord string) bool {
-	// We need to cover cases like:
-	// Word word 	-> Word
-	// Word word.	-> Word.
-	// word Word	-> word
-	// word Word. 	-> word.
 	return strings.ToLower(firstWord) == normalize(secondWord)
 }
