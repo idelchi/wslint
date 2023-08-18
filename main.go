@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/fatih/color"
+	"github.com/idelchi/wslint/wslint"
 )
 
 //nolint:gochecknoglobals // Global variable for CI stamping.
@@ -19,25 +20,13 @@ func usage() {
 	flag.PrintDefaults()
 }
 
-// exit prints the message and exits with the specified exit code.
-func exit(code int, msg string) {
-	log.Println(msg)
-
-	if code != 0 {
-		usage()
-	}
-
-	os.Exit(code)
-}
-
 func main() {
 	// Create the Wslint instance
-	wslint := Wslint{}
-
+	wslint := wslint.Wslint{Usage: usage, Version: versionStamp}
 	wslint.Parse()
 
-	if wslint.options.Exp {
-		if wslint.options.Fix {
+	if wslint.Options.Exp {
+		if wslint.Options.Fix {
 			log.Println(color.YellowString("Experimental feature may not work as expected"))
 			log.Println(color.YellowString("Press [enter] to continue or [ctrl+c] to abort"))
 
@@ -63,7 +52,7 @@ func main() {
 		}
 	}
 
-	if wslint.Match(); len(wslint.files) == 0 {
+	if wslint.Match(); len(wslint.Files) == 0 {
 		os.Exit(1)
 	}
 

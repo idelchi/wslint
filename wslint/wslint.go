@@ -1,4 +1,4 @@
-package main
+package wslint
 
 import (
 	"log"
@@ -14,16 +14,18 @@ import (
 
 // Wslint acts as a wrapper for the main functionality.
 type Wslint struct {
-	options Options
-	files   []linter.Linter
+	Options Options
+	Files   []linter.Linter
+	Usage   func()
+	Version string
 }
 
 // Match stores the files that match the patterns.
 func (w *Wslint) Match() {
-	verboseLog := w.options.Logger
-	patterns := w.options.Patterns
-	hidden := w.options.Hidden
-	exclude := w.options.Exclude
+	verboseLog := w.Options.Logger
+	patterns := w.Options.Patterns
+	hidden := w.Options.Hidden
+	exclude := w.Options.Exclude
 
 	// Create a matcher
 	matcher := matcher.New(hidden, exclude, verboseLog)
@@ -47,7 +49,7 @@ func (w *Wslint) Match() {
 		// TODO(Idelchi) Set up a factory function for this
 		lint := linter.New(file)
 
-		if w.options.Exp {
+		if w.Options.Exp {
 			stutter := checkers.Stutter{}
 			// Load file in config/stutters and read into a slice of strings
 			// Pass the slice to the checker
@@ -62,29 +64,29 @@ func (w *Wslint) Match() {
 		}
 
 		// Append the linter to the slice
-		w.files = append(w.files, *lint)
+		w.Files = append(w.Files, *lint)
 
 		verboseLog.Printf("<included> %q", file)
 	}
 
-	if len(w.files) == 0 {
+	if len(w.Files) == 0 {
 		log.Println("No files found")
 	}
 }
 
 // Process processes the files, prints out the results and returns the exit code.
 func (w *Wslint) Process() int {
-	numberOfFiles := len(w.files)
-	w.options.Logger.Printf("Processing %d files", numberOfFiles)
+	numberOfFiles := len(w.Files)
+	w.Options.Logger.Printf("Processing %d files", numberOfFiles)
 
-	w.options.NumberOfWorkers = min(w.options.NumberOfWorkers, numberOfFiles)
+	w.Options.NumberOfWorkers = min(w.Options.NumberOfWorkers, numberOfFiles)
 
 	workerPool := worker.Pool{
-		NumberOfWorkers: w.options.NumberOfWorkers,
+		NumberOfWorkers: w.Options.NumberOfWorkers,
 		NumberOfJobs:    numberOfFiles,
-		Fix:             w.options.Fix,
-		Files:           w.files,
-		Logger:          w.options.Logger,
+		Fix:             w.Options.Fix,
+		Files:           w.Files,
+		Logger:          w.Options.Logger,
 	}
 
 	// Create channels for sending and receiving jobs and results
@@ -96,7 +98,7 @@ func (w *Wslint) Process() int {
 	exitCode := 0
 
 	// Collect the results
-	for range w.files {
+	for range w.Files {
 		result := <-results
 
 		if ok := result.Summary(); !ok {

@@ -1,4 +1,4 @@
-package main
+package wslint
 
 import (
 	"flag"
@@ -8,6 +8,17 @@ import (
 	"runtime"
 	"strings"
 )
+
+// exit prints the message and exits with the specified exit code.
+func (w *Wslint) exit(code int, msg string) {
+	log.Println(msg)
+
+	if code != 0 {
+		w.Usage()
+	}
+
+	os.Exit(code)
+}
 
 // Options contains the options for the linter.
 type Options struct {
@@ -43,19 +54,19 @@ func (w *Wslint) Parse() {
 	// No time stamp in the log output
 	log.SetFlags(0)
 	// Set the usage message & parse the flags
-	flag.Usage = usage
+	flag.Usage = w.Usage
 	flag.Parse()
 
 	switch {
 	// If the version flag is set, print the version and exit
 	case *version:
-		exit(0, versionStamp)
+		w.exit(0, w.Version)
 	// If no arguments are given, raise an error message
 	case flag.NArg() == 0:
-		exit(1, "Error: Need to provide at least one path element")
+		w.exit(1, "Error: Need to provide at least one path element")
 	// If the number of parallel jobs is less than 1, raise an error message
 	case *parallel <= 0:
-		exit(1, "Error: Number of parallel jobs must be greater than 0")
+		w.exit(1, "Error: Number of parallel jobs must be greater than 0")
 	}
 
 	// Create a logger for debug messages
@@ -82,7 +93,7 @@ func (w *Wslint) Parse() {
 		excludes[i] = exclude
 	}
 
-	w.options = Options{
+	w.Options = Options{
 		Exclude:         excludes,
 		NumberOfWorkers: *parallel,
 		Fix:             *fix,
