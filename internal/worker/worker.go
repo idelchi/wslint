@@ -111,6 +111,7 @@ func worker(
 
 			if !slices.Equal(src, res) && fix {
 				info, _ := os.Lstat(file.Name)
+
 				if err := atomic.WriteFile(file.Name, strings.NewReader(strings.Join(res, "\n"))); err != nil {
 					panic("failed to write file")
 				}

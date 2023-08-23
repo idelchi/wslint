@@ -26,11 +26,13 @@ func (s Stutter) check(lines []string) (rows []int, stutters map[int][]string) {
 			for _, word := range words {
 				if !slices.Contains(s.Exceptions, word) {
 					stutters[row] = words
+
 					rows = append(rows, row)
 				}
 			}
 		}
 	}
+
 	return
 }
 
@@ -41,6 +43,7 @@ func (s Stutter) assert(rows []int, stutters map[int][]string) (errors []error) 
 			errors = append(errors, fmt.Errorf("%w: on line %d: words %v", ErrStutter, row, stutters[row]))
 		}
 	}
+
 	return
 }
 
@@ -52,9 +55,11 @@ func (s Stutter) format(lines []string, rows []int) []string {
 	return lines
 }
 
+// Format formats the lines.
 func (s Stutter) Format(lines []string) ([]string, []error) {
 	rows, stutters := s.check(lines)
 	errs := s.assert(rows, stutters)
+
 	if len(errs) == 0 {
 		return lines, errs
 	}

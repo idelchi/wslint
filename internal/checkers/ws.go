@@ -49,6 +49,7 @@ func (w Whitespace) format(lines []string, rows []int) []string {
 func (w Whitespace) Format(lines []string) ([]string, []error) {
 	rows := w.check(lines)
 	errs := w.assert(rows)
+
 	if len(errs) == 0 {
 		return lines, errs
 	}

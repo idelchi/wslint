@@ -48,6 +48,7 @@ func (l *Linter) HasCheckers() bool {
 	return l.Checkers != nil && len(l.Checkers) > 0
 }
 
+// HasIssues returns true if the linter has issues.
 func (l *Linter) HasIssues() bool {
 	return len(l.Errors) > 0
 }
@@ -85,6 +86,7 @@ func (l *Linter) Summary() (ok bool) {
 
 		for name, errors := range errors {
 			log.Println("  - Errors detected: ", errorColor(name))
+
 			for _, err := range errors {
 				log.Printf("    - %s", errorColor(err))
 			}
