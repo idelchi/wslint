@@ -2,7 +2,7 @@
 (Logger Logger)
 (logger Logger)
 (logger Logger))
-(options Options)
+(Options Options)
 (HEAD HEAD~)
 (hello hello!)
 (hi hi!",)
