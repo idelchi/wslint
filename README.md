@@ -104,12 +104,16 @@ Experimental features are disabled by default. To enable them, use the `-x` flag
 Beaware that applying formatting to files that are not under version control may result in data loss,
 as experimental features are not yet fully tested.
 
-The current list of experimental features is:
+The current experimental features are:
 
 <details>
   <summary><strong>stutters</strong></summary>
 
 - **Description**: Remove stuttering words (e.g., `the the` -> `the`).
-- **Limitations**: If exceptions are desired, they must be placed in a file [config/stutters](./config/stutters) relative to the current working directory.
-- **Issues**: Will not respect case, puncuation, as it will always select the second occurence when fixing.
+
+- **Limitations**: If exceptions are desired, they must be placed in a file [config/stutters](./config/stutters)
+  relative to the current working directory.
+
+- **Issues**: Will not respect case, punctuation, as it will always select the second occurrence when fixing.
+
 </details>

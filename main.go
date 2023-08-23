@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/fatih/color"
+
 	"github.com/idelchi/wslint/wslint"
 )
 

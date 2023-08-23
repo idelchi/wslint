@@ -1,3 +1,4 @@
+// Package wslint provides the main functionality of the linter.
 package wslint
 
 import (
