@@ -65,7 +65,7 @@ tasks:
     deps:
       - lint:default
       - go:lint
-    cmd: go run ./... -e "**/*.go" "**"
+    cmd: go run . -x -a -e "**/.build/**" "**"
 
   build:
     - task: go:build
