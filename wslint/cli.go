@@ -35,7 +35,8 @@ type Options struct {
 	Hidden          bool
 	Quiet           bool
 	Verbose         bool
-	Exp             bool
+	Experimental    bool
+	Interactive     bool
 }
 
 // Parse collects the commandline arguments and returns them as a CLIOptions struct.
@@ -44,14 +45,15 @@ type Options struct {
 func (w *Wslint) Parse() {
 	// Flags for the CLI
 	var (
-		fix      = flag.Bool("w", false, "format file in-place")
-		verbose  = flag.Bool("d", false, "debug output")
-		exclude  = flag.String("e", "", "exclude pattern, comma separated")
-		hidden   = flag.Bool("a", false, "show hidden files & folders")
-		parallel = flag.Int("j", runtime.NumCPU(), "number of parallel jobs, defaults to number of CPUs")
-		version  = flag.Bool("v", false, "print version")
-		quiet    = flag.Bool("q", false, "suppress messages")
-		exp      = flag.Bool("x", false, "enable experimental features")
+		fix          = flag.Bool("w", false, "format file in-place")
+		verbose      = flag.Bool("d", false, "debug output")
+		exclude      = flag.String("e", "", "exclude pattern, comma separated")
+		hidden       = flag.Bool("a", false, "show hidden files & folders")
+		parallel     = flag.Int("j", runtime.NumCPU(), "number of parallel jobs, defaults to number of CPUs")
+		version      = flag.Bool("v", false, "print version")
+		quiet        = flag.Bool("q", false, "suppress messages")
+		experimental = flag.Bool("x", false, "enable experimental features")
+		interactive  = flag.Bool("i", false, "interactive mode")
 	)
 
 	// No time stamp in the log output
@@ -111,6 +113,7 @@ func (w *Wslint) Parse() {
 		Hidden:          *hidden,
 		Quiet:           *quiet,
 		Verbose:         *verbose,
-		Exp:             *exp,
+		Experimental:    *experimental,
+		Interactive:     *interactive,
 	}
 }

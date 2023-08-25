@@ -50,7 +50,7 @@ func (w *Wslint) Match() {
 		// TODO(Idelchi) Set up a factory function for this
 		lint := linter.New(file)
 
-		if w.Options.Exp {
+		if w.Options.Experimental {
 			stutter := checkers.Stutter{}
 			// Load file in config/stutters and read into a slice of strings
 			// Pass the slice to the checker
