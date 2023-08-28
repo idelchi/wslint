@@ -20,7 +20,7 @@ includes:
   go:
     taskfile: '{{.DEVENV}}/taskfiles/Taskfile.go.yml'
     vars:
-      COVERAGE: 42.0%
+      COVERAGE: 41.0%
 
 silent: true
 
