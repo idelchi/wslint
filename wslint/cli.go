@@ -78,6 +78,9 @@ func (w *Wslint) Parse() {
 	// If the number of parallel jobs is less than 1, raise an error message
 	case *parallel <= 0:
 		w.exit(1, "Error: Number of parallel jobs must be greater than 0")
+	// Interactive is not implemented yet
+	case *interactive:
+		w.exit(1, "Error: Interactive mode is not implemented yet")
 	}
 
 	// Create a logger for debug messages
