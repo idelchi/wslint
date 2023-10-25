@@ -30,10 +30,10 @@ func CreateTempFile(t *testing.T, dir, name, content string) (file string) {
 	// Get the absolute path to the file.
 	file, err := filepath.Abs(file)
 
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	// Create the file.
-	require.Nil(t, os.WriteFile(file, []byte(content), 0o600))
+	require.NoError(t, os.WriteFile(file, []byte(content), 0o600))
 
 	return file
 }
@@ -183,7 +183,7 @@ func TestGlobber_Match_CornerCases(t *testing.T) {
 			// Get the list of files.
 			files := matcher.ListFiles()
 
-			require.Equal(t, tc.expected, len(files), "# files found failed: %s", tc.comment)
+			require.Len(t, tc.expected, len(files), "# files found failed: %s", tc.comment)
 		})
 	}
 }

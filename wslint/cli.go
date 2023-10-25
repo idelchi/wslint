@@ -2,10 +2,12 @@ package wslint
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"os"
 	"runtime"
+	"runtime/debug"
 	"strings"
 )
 
@@ -33,7 +35,8 @@ type Options struct {
 	Hidden          bool
 	Quiet           bool
 	Verbose         bool
-	Exp             bool
+	Experimental    bool
+	Interactive     bool
 }
 
 // Parse collects the commandline arguments and returns them as a CLIOptions struct.
@@ -42,14 +45,15 @@ type Options struct {
 func (w *Wslint) Parse() {
 	// Flags for the CLI
 	var (
-		fix      = flag.Bool("w", false, "format file in-place")
-		verbose  = flag.Bool("d", false, "debug output")
-		exclude  = flag.String("e", "", "exclude pattern, comma separated")
-		hidden   = flag.Bool("a", false, "show hidden files & folders")
-		parallel = flag.Int("j", runtime.NumCPU(), "number of parallel jobs, defaults to number of CPUs")
-		version  = flag.Bool("v", false, "print version")
-		quiet    = flag.Bool("q", false, "suppress messages")
-		exp      = flag.Bool("x", false, "enable experimental features")
+		fix          = flag.Bool("w", false, "format file in-place")
+		verbose      = flag.Bool("d", false, "debug output")
+		exclude      = flag.String("e", "", "exclude pattern, comma separated")
+		hidden       = flag.Bool("a", false, "show hidden files & folders")
+		parallel     = flag.Int("j", runtime.NumCPU(), "number of parallel jobs, defaults to number of CPUs")
+		version      = flag.Bool("v", false, "print version")
+		quiet        = flag.Bool("q", false, "suppress messages")
+		experimental = flag.Bool("x", false, "enable experimental features")
+		interactive  = flag.Bool("i", false, "interactive mode")
 	)
 
 	// No time stamp in the log output
@@ -61,6 +65,12 @@ func (w *Wslint) Parse() {
 	switch {
 	// If the version flag is set, print the version and exit
 	case *version:
+		if *verbose {
+			if info, available := debug.ReadBuildInfo(); available {
+				w.Version += fmt.Sprintf("\nruntime version information: %v", info.Main.Version)
+			}
+		}
+
 		w.exit(0, w.Version)
 	// If no arguments are given, raise an error message
 	case flag.NArg() == 0:
@@ -68,6 +78,9 @@ func (w *Wslint) Parse() {
 	// If the number of parallel jobs is less than 1, raise an error message
 	case *parallel <= 0:
 		w.exit(1, "Error: Number of parallel jobs must be greater than 0")
+	// Interactive is not implemented yet
+	case *interactive:
+		w.exit(1, "Error: Interactive mode is not implemented yet")
 	}
 
 	// Create a logger for debug messages
@@ -103,6 +116,7 @@ func (w *Wslint) Parse() {
 		Hidden:          *hidden,
 		Quiet:           *quiet,
 		Verbose:         *verbose,
-		Exp:             *exp,
+		Experimental:    *experimental,
+		Interactive:     *interactive,
 	}
 }

@@ -10,7 +10,7 @@ import (
 
 // Checker represents a line analyser.
 type Checker interface {
-	Format([]string) ([]string, []error)
+	Format(lines []string) ([]string, []error)
 }
 
 // Linter represents a text linter.
