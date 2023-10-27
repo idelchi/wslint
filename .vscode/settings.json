@@ -58,8 +58,8 @@
     },
     "pylint.args": ["--rcfile=.devenv/config/pyproject.toml"],
     "mypy-type-checker.args": ["--config=.devenv/config/pyproject.toml"],
-    "ruff.args": ["--config=.devenv/config/pyproject.toml"],
-    "ruff.run": "onSave",
+    "ruff.lint.args": ["--config=.devenv/config/pyproject.toml"],
+    "ruff.lint.run": "onSave",
     /* ****** ****** ****** */
     /* ****** GO ****** */
     "go.lintOnSave": "workspace",
@@ -119,3 +119,6 @@
 }
 // Note that environment variables might not work in config path
 // TODO: https://code.visualstudio.com/docs/editor/intellisense
+
+// Export a list of extensions:
+// code --list-extensions | xargs -L 1 echo code --install-extension
