@@ -19,7 +19,7 @@ func (w *Wslint) exit(code int, msg string) {
 		w.Usage()
 	}
 
-	//nolint: forbidigo // This is the only place where os.Exit() is used.
+	//nolint:forbidigo // This is the only place where os.Exit() is used.
 	os.Exit(code)
 }
 

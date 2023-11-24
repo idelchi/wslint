@@ -1,5 +1,3 @@
-//go:build excluded
-
 package checkers_test
 
 import (
@@ -13,9 +11,8 @@ import (
 // Test the Whitespace struct.
 // Test-sequence is:
 // 1. Create a Whitespace struct.
-// 2. Call the Analyze method for each line.
-// 3. Call the Finalize method.
-// 4. Check the results.
+// 2. Call the Format method.
+// 3. Check the results.
 func TestWhiteSpace(t *testing.T) {
 	t.Parallel()
 
@@ -37,6 +34,21 @@ func TestWhiteSpace(t *testing.T) {
 			comment: "Sequence with no trailing whitespace.",
 		},
 		{
+			name: "One row with no trailing whitespace",
+			lines: []string{
+				"This line has no trailing whitespace.",
+			},
+			comment: "One line with no trailing whitespace.",
+		},
+		{
+			name: "Two rows with no trailing whitespace,",
+			lines: []string{
+				"This line has no trailing whitespace.",
+				"",
+			},
+			comment: "Second line is empty.",
+		},
+		{
 			name: "Two rows with trailing whitespace",
 			lines: []string{
 				"This line has no trailing whitespace.",
@@ -56,18 +68,20 @@ func TestWhiteSpace(t *testing.T) {
 
 			linter := checkers.Whitespace{}
 
-			for row, line := range tc.lines {
-				linter.Analyze(line, row+1)
+			rows := linter.Check(tc.lines)
+
+			// offset each line by 1
+			for i := range rows {
+				rows[i]++
 			}
 
-			linter.Finalize()
-
-			rows, err := linter.Results()
-			stop := linter.Stop()
+			_, errs := linter.Format(tc.lines)
 
 			require.Equal(t, tc.rows, rows, "rows failed: %s", tc.comment)
-			require.Equal(t, tc.err, err, "err failed: %s", tc.comment)
-			require.Equal(t, tc.stop, stop, "stop failed: %s", tc.comment)
+
+			for _, err := range errs {
+				require.ErrorIs(t, err, tc.err, "err failed: %s", tc.comment)
+			}
 		})
 	}
 }
@@ -114,7 +128,9 @@ func TestWhiteSpace_Fix(t *testing.T) {
 
 			linter := checkers.Whitespace{}
 
-			require.Equal(t, tc.fixed, linter.Fix(tc.line), "fix failed: %s", tc.comment)
+			fixed, _ := linter.Format([]string{tc.line})
+
+			require.Equal(t, tc.fixed, fixed[0], "fix failed: %s", tc.comment)
 		})
 	}
 }

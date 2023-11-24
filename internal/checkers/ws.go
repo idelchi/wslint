@@ -7,14 +7,17 @@ import (
 	"github.com/idelchi/wslint/trailing"
 )
 
+// TODO(Idelchi): Returns trailing whitespace on one-line documents with one blank line
+// Need to restore the tests in this package.
+
 // ErrHasTrailing is returned when there is trailing whitespace.
 var ErrHasTrailing = errors.New("has trailing whitespace")
 
 // Whitespace keeps track of trailing whitespaces.
 type Whitespace struct{}
 
-// check identifies the lines that have trailing whitespaces.
-func (w Whitespace) check(lines []string) (rows []int) {
+// Check identifies the lines that have trailing whitespaces.
+func (w Whitespace) Check(lines []string) (rows []int) {
 	for i, line := range lines {
 		if trailing.Has(line) {
 			rows = append(rows, i)
@@ -47,7 +50,7 @@ func (w Whitespace) format(lines []string, rows []int) []string {
 // Format checks the lines for trailing whitespaces, asserts any errors,
 // and then formats the lines to remove those whitespaces.
 func (w Whitespace) Format(lines []string) ([]string, []error) {
-	rows := w.check(lines)
+	rows := w.Check(lines)
 	errs := w.assert(rows)
 
 	if len(errs) == 0 {
