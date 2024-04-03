@@ -25,7 +25,7 @@ func Find(line string) []string {
 		return stutters
 	}
 
-	for i := 0; i < len(words)-1; i++ {
+	for i := range words[:len(words)-1] {
 		firstWord := words[i]
 		secondWord := words[i+1]
 
