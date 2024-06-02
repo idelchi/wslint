@@ -71,7 +71,6 @@ ARG USER=user
 COPY --from=devenv /etc/passwd /etc/passwd
 COPY --from=devenv /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=devenv /go/bin/wslint /wslint
-COPY --from=devenv --chown=${USER}:${USER} /home/user/utils /home/${USER}/utils
 
 USER ${USER}
 WORKDIR /home/${USER}
