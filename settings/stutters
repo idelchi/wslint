@@ -6,3 +6,5 @@
 (HEAD HEAD~)
 (hello hello!)
 (hi hi!",)
+(/etc/passwd /etc/passwd)
+(/usr/share/zoneinfo /usr/share/zoneinfo)

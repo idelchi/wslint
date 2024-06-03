@@ -49,10 +49,8 @@ func (p *Pool) Start(jobs, results chan linter.Linter) {
 	var waitGroup sync.WaitGroup
 
 	// Start the workers
-	for i := 0; i < p.NumberOfWorkers; i++ {
+	for i := range p.NumberOfWorkers {
 		waitGroup.Add(1)
-
-		i := i
 
 		go func() {
 			defer waitGroup.Done()

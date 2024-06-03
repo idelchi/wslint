@@ -3,4 +3,4 @@ dictionaries:
 
 dictionaryDefinitions:
   - name: wslint-words
-    path: config/project-words
+    path: project-words

@@ -5,7 +5,7 @@ jobs:
   verify:
     uses: idelchi/devenv/.github/workflows/devenv-actions.yml@dev
     with:
-      image: 'idelchi/devenv:dev'
+      image: "idelchi/devenv:dev"
 # TODO(Idelchi): Handle release workflows.
 # https://github.com/skills/release-based-workflow
 # https://birtony.medium.com/setting-up-automated-release-workflow-with-github-actions-628dbca2446e

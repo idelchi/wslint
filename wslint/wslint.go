@@ -54,7 +54,8 @@ func (w *Wslint) Match() {
 			stutter := checkers.Stutter{}
 			// Load file in config/stutters and read into a slice of strings
 			// Pass the slice to the checker
-			configurationFile := "config/stutters"
+			// TODO(Idelchi): The configuration file is hardcoded
+			configurationFile := "settings/stutters"
 			if _, err := os.Stat(configurationFile); !os.IsNotExist(err) {
 				if content, err := os.ReadFile(configurationFile); err == nil {
 					stutter.Exceptions = strings.Split(string(content), "\n")

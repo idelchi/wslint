@@ -92,8 +92,6 @@ func TestGlobber_Match(t *testing.T) {
 	}
 
 	for _, tc := range tcs {
-		tc := tc
-
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -163,8 +161,6 @@ func TestGlobber_Match_CornerCases(t *testing.T) {
 	}
 
 	for _, tc := range tcs {
-		tc := tc
-
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -183,7 +179,7 @@ func TestGlobber_Match_CornerCases(t *testing.T) {
 			// Get the list of files.
 			files := matcher.ListFiles()
 
-			require.Len(t, tc.expected, len(files), "# files found failed: %s", tc.comment)
+			require.Len(t, files, tc.expected, "# files found failed: %s", tc.comment)
 		})
 	}
 }

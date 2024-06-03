@@ -1,3 +1,4 @@
+// Package linter provides a high-level interface to organize line-base formatting of a sequence of strings.
 package linter
 
 import (
