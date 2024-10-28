@@ -19,7 +19,17 @@ and enforcing a single blank line at the end of each file.
 
 ## Installation
 
-    go install github.com/idelchi/wslint/cmd/wslint@latest
+### From source
+
+```sh
+go install github.com/idelchi/wslint/cmd/wslint@latest
+```
+
+### From installation script
+
+```sh
+curl -sSL https://raw.githubusercontent.com/idelchi/wslint/refs/heads/dev/install.sh | sh -s -- -d ~/.local/bin
+```
 
 ## Usage
 
