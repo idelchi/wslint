@@ -12,5 +12,5 @@ done
 curl ${DISABLE_SSL:+-k} \
   -sSL \
   https://raw.githubusercontent.com/idelchi/scripts/refs/heads/dev/install.sh |
-  INSTALLER_TOOL="go-match" \
+  INSTALLER_TOOL="wslint" \
     sh -s -- "$@"
