@@ -19,11 +19,23 @@ and enforcing a single blank line at the end of each file.
 
 ## Installation
 
-    go install github.com/idelchi/wslint/cmd/wslint@latest
+### From source
+
+```sh
+go install github.com/idelchi/wslint/cmd/wslint@latest
+```
+
+### From installation script
+
+```sh
+curl -sSL https://raw.githubusercontent.com/idelchi/wslint/refs/heads/main/install.sh | sh -s -- -d ~/.local/bin
+```
 
 ## Usage
 
-    wslint [flags] [path ...]
+```sh
+wslint [flags] [path ...]
+```
 
 Paths can be specified as one or more glob patterns or simple file paths.
 
@@ -33,23 +45,33 @@ Enclose path arguments in quotes to prevent shell expansion.
 
 Lint all files in the current directory and its subdirectories:
 
+```sh
     wslint "**"
+```
 
 Lint all text files in the current directory and its subdirectories:
 
+```sh
     wslint "**/*.txt"
+```
 
 Format all `.js` and `.css` files in the `src` directory, including hidden files:
 
+```sh
     wslint -w -a "src/*.js" "src/*.css"
+```
 
 Lint all `.py` files in the `app` directory, excluding `__init__.py` files and the `tests` folder:
 
+```sh
     wslint -e "app/**/__init__.py,app/tests/**" "app/**/*.py"
+```
 
 Run wslint on the `my_project` directory with four parallel jobs:
 
+```sh
     wslint -j 4 "my_project/**"
+```
 
 ## Command Line Flags
 
@@ -87,9 +109,11 @@ To include files that are normally excluded, either:
 
 Example:
 
-    wslint ".git/config"
-    wslint ".task/*.env"
-    wslint "*.exe"
+```sh
+wslint ".git/config"
+wslint ".task/*.env"
+wslint "*.exe"
+```
 
 ## Disclaimer
 

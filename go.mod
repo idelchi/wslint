@@ -1,6 +1,6 @@
 module github.com/idelchi/wslint
 
-go 1.22
+go 1.23
 
 require (
 	bou.ke/monkey v1.0.2

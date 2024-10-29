@@ -46,7 +46,7 @@ func New(name string) *Linter {
 
 // HasCheckers returns true if the linter has checkers configured.
 func (l *Linter) HasCheckers() bool {
-	return l.Checkers != nil && len(l.Checkers) > 0
+	return len(l.Checkers) > 0
 }
 
 // HasIssues returns true if the linter has issues.
