@@ -12,7 +12,7 @@ on:
 
 jobs:
   verify:
-    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+    if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
     uses: idelchi/devenv/.github/workflows/devenv-actions.yml@dev
     with:
       image: idelchi/devenv:dev
