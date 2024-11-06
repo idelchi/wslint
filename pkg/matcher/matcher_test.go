@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/idelchi/wslint/matcher"
+	"github.com/idelchi/wslint/pkg/matcher"
 )
 
 // DummyLogger implements the Logger interface, but does nothing.

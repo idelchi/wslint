@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/idelchi/wslint/stuttering"
+	"github.com/idelchi/wslint/pkg/stuttering"
 )
 
 // ErrStutter is returned when there is stuttering.

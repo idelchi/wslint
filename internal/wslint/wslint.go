@@ -10,7 +10,7 @@ import (
 	"github.com/idelchi/wslint/internal/checkers"
 	"github.com/idelchi/wslint/internal/linter"
 	"github.com/idelchi/wslint/internal/worker"
-	"github.com/idelchi/wslint/matcher"
+	"github.com/idelchi/wslint/pkg/matcher"
 )
 
 // Wslint acts as a wrapper for the main functionality.

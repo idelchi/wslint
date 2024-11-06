@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/idelchi/wslint/trailing"
+	"github.com/idelchi/wslint/pkg/trailing"
 )
 
 func TestTrailing(t *testing.T) {

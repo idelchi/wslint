@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/idelchi/wslint/trailing"
+	"github.com/idelchi/wslint/pkg/trailing"
 )
 
 // Benchmarks were used to compare the performance of different implementations of the Has function.
