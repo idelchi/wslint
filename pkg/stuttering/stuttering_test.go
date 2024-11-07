@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/idelchi/wslint/stuttering"
+	"github.com/idelchi/wslint/pkg/stuttering"
 )
 
 func TestStuttering(t *testing.T) {

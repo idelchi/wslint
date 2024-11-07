@@ -76,7 +76,7 @@ func New(hidden bool, exclude []string, logger Logger) Globber {
 	}
 
 	matcher.extraExcludes = map[string]func(string) bool{
-		"detected as binary": isBinary,
+		"detected as binary": IsBinary,
 	}
 
 	return matcher
@@ -104,11 +104,11 @@ outer:
 		case contains(match, m.files):
 			m.Logger.Printf("<skipped> %q <already in matches>", match)
 		// 2) If the file is explicitly included (i.e no glob pattern is used), then it should be included immediately.
-		case isExplicitlyIncluded(pattern):
+		case IsExplicitlyIncluded(pattern):
 			m.Logger.Printf("<exception> %q <explicitly included>", match)
 			m.files = append(m.files, match)
-		case isExcluded(match, m.Exclude) != "":
-			m.Logger.Printf("<skipped> %q <matches exclude pattern> %q", match, isExcluded(match, m.Exclude))
+		case IsExcluded(match, m.Exclude) != "":
+			m.Logger.Printf("<skipped> %q <matches exclude pattern> %q", match, IsExcluded(match, m.Exclude))
 		default:
 			for name, fn := range m.extraExcludes {
 				if fn(match) {

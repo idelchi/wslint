@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/idelchi/wslint/trailing"
+	"github.com/idelchi/wslint/pkg/trailing"
 )
 
 // TODO(Idelchi): Returns trailing whitespace on one-line documents with one blank line
