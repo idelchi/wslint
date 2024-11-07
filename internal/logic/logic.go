@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/fatih/color"
+
 	"github.com/idelchi/wslint/internal/wslint"
 )
 
@@ -18,6 +19,7 @@ func usage() {
 	flag.PrintDefaults()
 }
 
+// Run is the main function of the application.
 func Run(version string) int {
 	// Create the Wslint instance
 	wslint := wslint.Wslint{Usage: usage, Version: version}

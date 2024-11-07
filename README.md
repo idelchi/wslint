@@ -22,7 +22,7 @@ and enforcing a single blank line at the end of each file.
 ### From source
 
 ```sh
-go install github.com/idelchi/wslint/cmd/wslint@latest
+go install github.com/idelchi/wslint@latest
 ```
 
 ### From installation script

@@ -68,8 +68,8 @@ tasks:
       - lint:default
       - go:lint
     cmds:
-      - go run ./cmd/wslint -a -e "**/.build/**" "**"
-      - go run ./cmd/wslint -x -a -e "**/.build/**" "**"
+      - go run . -a -e "**/.build/**" "**"
+      - go run . -x -a -e "**/.build/**" "**"
 
   build:
     - task: go:build

@@ -110,7 +110,7 @@ func TestIsExplicitlyIncluded(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, test.expected, isExplicitlyIncluded(test.file))
+			assert.Equal(t, test.expected, IsExplicitlyIncluded(test.file))
 		})
 	}
 }
