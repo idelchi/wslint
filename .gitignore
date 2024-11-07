@@ -11,6 +11,7 @@
 .build
 .cache
 .task
+.exp
 .mypy_cache
 .pytests
 .secrets
