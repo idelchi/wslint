@@ -43,6 +43,7 @@ func (w *Wslint) Match() {
 	// Fill the slice with files
 	for _, file := range matcher.ListFiles() {
 		// Get the relative path to the execution directory
+		// TODO(Idelchi): This is not working, needs os.Getwd() to get the current working directory
 		if fileRel, err := filepath.Rel(".", file); err == nil {
 			file = fileRel
 		}

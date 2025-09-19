@@ -19,6 +19,7 @@ func TestExecutableError(t *testing.T) { //nolint:paralleltest // Monkey patchin
 	}
 
 	defer monkey.UnpatchAll()
+
 	monkey.Patch(os.Executable, func() (string, error) {
 		return "", assert.AnError
 	})

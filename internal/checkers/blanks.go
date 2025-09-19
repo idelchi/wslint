@@ -19,6 +19,19 @@ var (
 // It returns the formatted lines with the correct number of blank lines at the end of the file.
 type Blanks struct{}
 
+// Format checks the correctness of the sequence of lines in terms of blank lines at the end,
+// applies the formatting if needed and returns the formatted lines along with the errors.
+func (b Blanks) Format(lines []string) ([]string, []error) {
+	rows := b.check(lines)
+	errs := b.assert(rows)
+
+	if len(errs) == 0 {
+		return lines, errs
+	}
+
+	return b.format(lines, rows), errs
+}
+
 // check checks for trailing empty lines at the end of a sequence of lines.
 // It returns the rows that are blank (at the end).
 func (b Blanks) check(lines []string) (rows []int) {
@@ -36,7 +49,7 @@ func (b Blanks) check(lines []string) (rows []int) {
 	// Reverse the slice to get the last non-blank entry as the first index.
 	slices.Reverse(rows)
 
-	return
+	return rows
 }
 
 // assert returns an error based on the number of blank lines at the end of the sequence of lines.
@@ -68,17 +81,4 @@ func (b Blanks) format(lines []string, rows []int) []string {
 	default:
 		return lines[:rows[1]]
 	}
-}
-
-// Format checks the correctness of the sequence of lines in terms of blank lines at the end,
-// applies the formatting if needed and returns the formatted lines along with the errors.
-func (b Blanks) Format(lines []string) ([]string, []error) {
-	rows := b.check(lines)
-	errs := b.assert(rows)
-
-	if len(errs) == 0 {
-		return lines, errs
-	}
-
-	return b.format(lines, rows), errs
 }

@@ -16,11 +16,10 @@ package worker
 import (
 	"log"
 	"os"
+	"slices"
 	"strings"
 	"sync"
 	"time"
-
-	"golang.org/x/exp/slices"
 
 	"github.com/natefinch/atomic"
 
@@ -49,12 +48,13 @@ func (p *Pool) Start(jobs, results chan linter.Linter) {
 	var waitGroup sync.WaitGroup
 
 	// Start the workers
-	for i := range p.NumberOfWorkers {
+	for index := range p.NumberOfWorkers {
 		waitGroup.Add(1)
 
 		go func() {
 			defer waitGroup.Done()
-			worker(i+1, p.Logger, p.Fix, jobs, results)
+
+			worker(index+1, p.Logger, p.Fix, jobs, results)
 		}()
 	}
 

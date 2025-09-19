@@ -1,1 +1,0 @@
-package wslint_test

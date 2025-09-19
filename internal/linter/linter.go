@@ -61,6 +61,7 @@ func (l *Linter) Format(lines []string) []string {
 	}
 
 	var errors []error
+
 	for name, checker := range l.Checkers {
 		if lines, errors = checker.Format(lines); len(errors) > 0 {
 			l.Errors[name] = errors
@@ -80,6 +81,7 @@ func (l *Linter) Summary() (ok bool) {
 
 	if !ok {
 		log.Println(filename(l.Name))
+
 		errors := l.Errors
 
 		// Get all the keys in errors

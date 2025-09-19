@@ -16,6 +16,18 @@ type Stutter struct {
 	Exceptions []string
 }
 
+// Format formats the lines.
+func (s Stutter) Format(lines []string) ([]string, []error) {
+	rows, stutters := s.check(lines)
+	errs := s.assert(rows, stutters)
+
+	if len(errs) == 0 {
+		return lines, errs
+	}
+
+	return s.format(lines, rows), errs
+}
+
 func (s Stutter) check(lines []string) (rows []int, stutters map[int][]string) {
 	stutters = make(map[int][]string)
 
@@ -33,7 +45,7 @@ func (s Stutter) check(lines []string) (rows []int, stutters map[int][]string) {
 		}
 	}
 
-	return
+	return rows, stutters
 }
 
 func (s Stutter) assert(rows []int, stutters map[int][]string) (errors []error) {
@@ -44,7 +56,7 @@ func (s Stutter) assert(rows []int, stutters map[int][]string) (errors []error) 
 		}
 	}
 
-	return
+	return errors
 }
 
 func (s Stutter) format(lines []string, rows []int) []string {
@@ -53,16 +65,4 @@ func (s Stutter) format(lines []string, rows []int) []string {
 	}
 
 	return lines
-}
-
-// Format formats the lines.
-func (s Stutter) Format(lines []string) ([]string, []error) {
-	rows, stutters := s.check(lines)
-	errs := s.assert(rows, stutters)
-
-	if len(errs) == 0 {
-		return lines, errs
-	}
-
-	return s.format(lines, rows), errs
 }

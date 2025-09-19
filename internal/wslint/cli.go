@@ -40,8 +40,6 @@ type Options struct {
 }
 
 // Parse collects the commandline arguments and returns them as a CLIOptions struct.
-//
-//nolint:funlen // This function is long, but has one dedicated function.
 func (w *Wslint) Parse() {
 	// Flags for the CLI
 	var (
@@ -85,6 +83,7 @@ func (w *Wslint) Parse() {
 
 	// Create a logger for debug messages
 	verboseLog := log.New(os.Stdout, "", 0)
+
 	if !*verbose {
 		// Disable debug messages if the verbose flag is not set,
 		verboseLog.SetOutput(io.Discard)

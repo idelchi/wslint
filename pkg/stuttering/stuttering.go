@@ -31,6 +31,7 @@ func Find(line string) []string {
 
 		if isStutteringPair(firstWord, secondWord) {
 			stutter := fmt.Sprintf("(%s %s)", firstWord, secondWord)
+
 			stutters = append(stutters, stutter)
 		}
 	}

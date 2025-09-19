@@ -8,3 +8,6 @@
 (hi hi!",)
 (/etc/passwd /etc/passwd)
 (/usr/share/zoneinfo /usr/share/zoneinfo)
+(/usr/local/go /usr/local/go)
+(/usr/local/cargo /usr/local/cargo)
+(/usr/local/rustup /usr/local/rustup)

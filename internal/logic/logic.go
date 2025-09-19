@@ -39,6 +39,7 @@ func Run(version string) int {
 			// Goroutine to detect the Enter key
 			go func() {
 				_, _ = os.Stdin.Read([]byte{0})
+
 				enterCh <- struct{}{}
 			}()
 

@@ -12,7 +12,7 @@ import (
 func benchmarkHas(b *testing.B, s string) {
 	b.Helper()
 
-	for n := 0; n < b.N; n++ {
+	for range b.N {
 		trailing.Has(s)
 	}
 }
@@ -21,7 +21,7 @@ func benchmarkHas(b *testing.B, s string) {
 func benchmarkTrim(b *testing.B, s string) {
 	b.Helper()
 
-	for n := 0; n < b.N; n++ {
+	for range b.N {
 		trailing.Trim(s)
 	}
 }

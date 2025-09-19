@@ -37,7 +37,7 @@ func IsExcluded(file string, excludes []string) (pattern string) {
 		}
 	}
 
-	return
+	return pattern
 }
 
 // contains returns true if the given file is already present in the list of matched files, false otherwise.

@@ -12,7 +12,7 @@ import (
 
 // Logger is an interface for logging formatted messages.
 type Logger interface {
-	Printf(format string, v ...interface{})
+	Printf(format string, v ...any)
 }
 
 // Globber is a file matcher that compiles a list of files matching a given pattern, while
@@ -106,6 +106,7 @@ outer:
 		// 2) If the file is explicitly included (i.e no glob pattern is used), then it should be included immediately.
 		case IsExplicitlyIncluded(pattern):
 			m.Logger.Printf("<exception> %q <explicitly included>", match)
+
 			m.files = append(m.files, match)
 		case IsExcluded(match, m.Exclude) != "":
 			m.Logger.Printf("<skipped> %q <matches exclude pattern> %q", match, IsExcluded(match, m.Exclude))

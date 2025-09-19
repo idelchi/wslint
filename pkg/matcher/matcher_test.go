@@ -15,7 +15,7 @@ import (
 type DummyLogger struct{}
 
 // Printf prints out to nothing.
-func (DummyLogger) Printf(_ string, _ ...interface{}) {}
+func (DummyLogger) Printf(_ string, _ ...any) {}
 
 // Helper function to:
 // - create a named file in a given folder
@@ -118,7 +118,7 @@ func TestGlobber_Match(t *testing.T) {
 			// Get the list of files.
 			files := matcher.ListFiles()
 
-			require.Equal(t, len(tc.expected), len(files), "# files found failed: %s", tc.comment)
+			require.Len(t, files, len(tc.expected), "# files found failed: %s", tc.comment)
 			require.Equal(t, tc.expected, files, "files found failed: %s", tc.comment)
 		})
 	}
@@ -168,6 +168,7 @@ func TestGlobber_Match_CornerCases(t *testing.T) {
 			matcher := matcher.Globber{Logger: logger}
 
 			fErrCheck := require.NoError
+
 			if tc.err {
 				fErrCheck = require.Error
 			}
